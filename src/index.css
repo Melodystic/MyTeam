@@ -1,0 +1,85 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family:
+    'Segoe UI',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Roboto',
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+/* Ant Design tabs: horizontal scroll on narrow screens */
+.ant-tabs-nav {
+  margin-bottom: 12px !important;
+}
+
+.ant-tabs-nav-list {
+  flex-wrap: nowrap;
+}
+
+.ant-tabs-tab {
+  padding: 8px 0 !important;
+}
+
+@media (max-width: 767px) {
+  .ant-list-item-action {
+    margin-inline-start: 8px !important;
+    padding-inline-start: 8px !important;
+  }
+
+  .ant-list-item-action > li {
+    padding: 0 4px !important;
+  }
+
+  .ant-modal {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+  }
+
+  .ant-collapse-header {
+    padding-inline: 12px !important;
+  }
+
+  .ant-collapse-content-box {
+    padding-inline: 12px !important;
+  }
+
+  textarea.ant-input {
+    font-size: 16px !important; /* prevent iOS zoom on focus */
+  }
+
+  .ant-select-selection-search-input {
+    font-size: 16px !important;
+  }
+}
