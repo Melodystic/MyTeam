@@ -11,7 +11,7 @@ export default function App() {
     <ThemeProvider>
       <AntApp>
         <EmployeesProvider>
-          <BrowserRouter>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
             <Routes>
               <Route element={<AppLayout />}>
                 <Route index element={<EmployeesPage />} />

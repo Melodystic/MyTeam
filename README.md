@@ -34,7 +34,7 @@ npm install
 npm run dev
 ```
 
-Приложение откроется на [http://localhost:5173](http://localhost:5173).
+Приложение откроется на [http://localhost:5173/MyTeam/](http://localhost:5173/MyTeam/).
 
 ## Скрипты
 
@@ -45,13 +45,17 @@ npm run dev
 | `npm run preview` | Локальный просмотр прод-сборки |
 | `npm run lint` | Проверка кода (oxlint) |
 
-## Деплой
+## Деплой (GitHub Pages)
 
-Это статический фронтенд. После `npm run build` достаточно опубликовать папку `dist` (Netlify, Vercel, Cloudflare Pages, GitHub Pages, nginx и т.п.).
+Сайт публикуется автоматически при пуше в `main`:
 
-Для SPA нужна отдача `index.html` на все клиентские маршруты.
+**https://melodystic.github.io/MyTeam/**
 
-IndexedDB привязан к домену браузера: на новом URL база будет пустой — перенесите данные кнопками **Сохранить базу** / **Загрузить базу** в шапке.
+Один раз в репозитории: **Settings → Pages → Source → GitHub Actions**.
+
+После сборки в `dist` копируется `404.html` (fallback для React Router), `base` Vite — `/MyTeam/`.
+
+IndexedDB привязан к домену браузера: на Pages база будет отдельной — перенесите данные кнопками **Сохранить базу** / **Загрузить базу** в шапке.
 
 ## Репозиторий
 
