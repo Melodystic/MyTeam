@@ -35,3 +35,12 @@ dist.zip
 # OS / misc
 Thumbs.db
 *.tsbuildinfo
+
+# Local SSH keys (never commit)
+keyNew
+keyNew.pub
+*.pem
+id_ed25519
+id_ed25519.pub
+id_rsa
+id_rsa.pub
