@@ -5,8 +5,10 @@ import { useEmployees } from '../context/EmployeesContext';
 import { NeedsBlock } from '../components/NeedsBlock';
 import { MetricsBlock } from '../components/MetricsBlock';
 import { LeadershipBlock } from '../components/LeadershipBlock';
-import { SavedNotesBlock } from '../components/SavedNotesBlock';
+import { DelegationBlock } from '../components/DelegationBlock';
+import { OneToOneBlock } from '../components/OneToOneBlock';
 import { FeedbackBlock } from '../components/FeedbackBlock';
+import { TaskSettingBlock } from '../components/TaskSettingBlock';
 import { getFullName } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
@@ -23,6 +25,12 @@ export function EmployeeDetailPage() {
     updateMetricValue,
     updateMetricComment,
     updateLeadershipStyle,
+    updateOneToOnePrep,
+    updateOneToOneAfter,
+    addOneToOneQuestion,
+    updateOneToOneQuestion,
+    updateOneToOneQuestionAnswer,
+    removeOneToOneQuestion,
     addOneToOneNote,
     updateOneToOneNote,
     addDelegationNote,
@@ -80,13 +88,29 @@ export function EmployeeDetailPage() {
         />
       )}
 
-      <Typography.Title
-        level={isMobile ? 4 : 3}
-        style={{ marginTop: 0, marginBottom: 16 }}
-        ellipsis
-      >
-        {fullName}
-      </Typography.Title>
+      <div style={{ marginTop: 0, marginBottom: 16 }}>
+        <Typography.Title
+          level={isMobile ? 4 : 3}
+          style={{ marginTop: 0, marginBottom: 4 }}
+          ellipsis
+        >
+          {fullName}
+        </Typography.Title>
+        {(employee.projects.length > 0 || employee.projectManagers.length > 0) && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {employee.projects.length > 0 && (
+              <Typography.Text type="secondary" style={{ fontSize: isMobile ? 13 : 14 }}>
+                Проекты: {employee.projects.join(', ')}
+              </Typography.Text>
+            )}
+            {employee.projectManagers.length > 0 && (
+              <Typography.Text type="secondary" style={{ fontSize: isMobile ? 13 : 14 }}>
+                РП: {employee.projectManagers.join(', ')}
+              </Typography.Text>
+            )}
+          </div>
+        )}
+      </div>
 
       <div
         style={{
@@ -146,14 +170,33 @@ export function EmployeeDetailPage() {
               ),
             },
             {
+              key: 'tasks',
+              label: isMobile ? 'Задачи' : 'Постановка задач',
+              children: <TaskSettingBlock />,
+            },
+            {
               key: 'notes',
-              label: isMobile ? 'One-to-one' : 'Заметки после One-to-one',
+              label: 'One to one',
               children: (
-                <SavedNotesBlock
+                <OneToOneBlock
+                  prep={employee.oneToOnePrep}
+                  after={employee.oneToOneAfter}
+                  questions={employee.oneToOneQuestions ?? []}
                   notes={employee.oneToOneNotes}
-                  placeholder="Запишите итоги и договорённости после one-to-one..."
-                  onAdd={(text) => addOneToOneNote(employee.id, text)}
-                  onUpdate={(noteId, text) =>
+                  onChangePrep={(prep) => updateOneToOnePrep(employee.id, prep)}
+                  onChangeAfter={(text) => updateOneToOneAfter(employee.id, text)}
+                  onAddQuestion={(text) => addOneToOneQuestion(employee.id, text)}
+                  onUpdateQuestion={(questionId, text) =>
+                    updateOneToOneQuestion(employee.id, questionId, text)
+                  }
+                  onChangeAnswer={(questionId, answer) =>
+                    updateOneToOneQuestionAnswer(employee.id, questionId, answer)
+                  }
+                  onRemoveQuestion={(questionId) =>
+                    removeOneToOneQuestion(employee.id, questionId)
+                  }
+                  onAddNote={(text) => addOneToOneNote(employee.id, text)}
+                  onUpdateNote={(noteId, text) =>
                     updateOneToOneNote(employee.id, noteId, text)
                   }
                 />
@@ -163,9 +206,8 @@ export function EmployeeDetailPage() {
               key: 'delegation',
               label: 'Делегирование',
               children: (
-                <SavedNotesBlock
+                <DelegationBlock
                   notes={employee.delegationNotes}
-                  placeholder="Заметки по делегированию..."
                   onAdd={(text) => addDelegationNote(employee.id, text)}
                   onUpdate={(noteId, text) =>
                     updateDelegationNote(employee.id, noteId, text)

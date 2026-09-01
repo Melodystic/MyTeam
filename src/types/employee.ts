@@ -110,6 +110,151 @@ export const LEADERSHIP_REMEMBER = [
   'Чем точнее руководитель соотносит стиль с мотивацией и компетентностью, тем выше шанс на результат без лишнего давления и потерь вовлеченности.',
 ];
 
+export const SMART_CRITERIA: {
+  letter: string;
+  word: string;
+  label: string;
+  description: string;
+}[] = [
+  {
+    letter: 'S',
+    word: 'Specific',
+    label: 'Конкретная',
+    description:
+      'Задача сформулирована однозначно: что нужно сделать, в каком объёме и в каких рамках. Не «улучшить отчёт», а «добавить в отчёт данные по продажам за март и отправить заказчику».',
+  },
+  {
+    letter: 'M',
+    word: 'Measurable',
+    label: 'Измеримая',
+    description:
+      'Есть критерий, по которому видно, что задача выполнена: число, факт, качество или другой наблюдаемый результат.',
+  },
+  {
+    letter: 'A',
+    word: 'Achievable',
+    label: 'Достижимая',
+    description:
+      'Задача реалистична для этого человека в этих условиях: хватает навыков, времени и ресурсов. Иначе это не постановка, а демотивация.',
+  },
+  {
+    letter: 'R',
+    word: 'Relevant',
+    label: 'Значимая',
+    description:
+      'Задача связана с целью команды, проекта или развитием сотрудника. Человек понимает, зачем это нужно, а не делает работу «ради галочки».',
+  },
+  {
+    letter: 'T',
+    word: 'Time-bound',
+    label: 'Ограниченная по времени',
+    description:
+      'Есть срок или контрольные точки. Без дедлайна задача растворяется среди текучки и её сложно довести до результата.',
+  },
+];
+
+export interface TaskSettingMethod {
+  key: string;
+  title: string;
+  intro: string;
+  howTo: string[];
+  whenToUse: string[];
+  pros: string[];
+  cons: string[];
+}
+
+export const TASK_SETTING_METHODS: TaskSettingMethod[] = [
+  {
+    key: 'algorithm',
+    title: 'По алгоритму',
+    intro:
+      'Подходит для новичков, новых сотрудников и команд с низкой зрелостью, где важны точность и предсказуемость.',
+    howTo: [
+      'Сделай шаг 1, затем шаг 2, затем шаг 3.',
+      'Вот шаблон, по которому нужно действовать.',
+      'Отклоняться от процесса не нужно.',
+    ],
+    whenToUse: [
+      'Человек только входит в роль.',
+      'Задача рутинная или регламентная.',
+      'Ошибка дорого стоит.',
+    ],
+    pros: [
+      'Максимальная ясность.',
+      'Легко контролировать выполнение.',
+      'Меньше риска ошибок.',
+    ],
+    cons: [
+      'Почти нет пространства для инициативы.',
+      'Сотрудник меньше учится принимать решения.',
+    ],
+  },
+  {
+    key: 'result',
+    title: 'По результату',
+    intro:
+      'Подходит для уверенных специалистов и команд со средней или высокой зрелостью, которые умеют сами выбирать способ работы.',
+    howTo: [
+      'Вот цель.',
+      'Вот ожидаемый результат.',
+      'Вот срок и критерии успеха.',
+      'Способ выполнения выбираешь сам.',
+    ],
+    whenToUse: [
+      'Специалист опытный и самостоятельный.',
+      'Важен не процесс, а итог.',
+      'Нужна ответственность за результат, а не за набор действий.',
+    ],
+    pros: [
+      'Развивает самостоятельность.',
+      'Экономит время руководителя.',
+      'Повышает чувство ответственности.',
+    ],
+    cons: [
+      'Нужны четкие критерии результата.',
+      'Слабому сотруднику может не хватить опоры.',
+    ],
+  },
+  {
+    key: 'problem',
+    title: 'По проблеме',
+    intro:
+      'Подходит для зрелых команд и сильных специалистов, которым можно давать не задачу, а направление.',
+    howTo: [
+      'У нас есть проблема.',
+      'Вот контекст и ограничения.',
+      'Предложите решение и план действий.',
+    ],
+    whenToUse: [
+      'Команда сильная и мотивированная.',
+      'Нужны нестандартные решения.',
+      'Важны креативность и вовлеченность.',
+    ],
+    pros: [
+      'Включает мышление команды.',
+      'Дает максимум инициативы.',
+      'Хорошо работает для сложных и неоднозначных задач.',
+    ],
+    cons: [
+      'Требует высокой зрелости.',
+      'Без рамок может уйти в хаос.',
+    ],
+  },
+];
+
+export const DELEGATION_DO = [
+  'Задачи, которые развивают сотрудника, но не несут чрезмерного риска.',
+  'Уже отработанные проекты с понятными критериями оценки.',
+  'Ответственность и задачи в полном объеме.',
+  'Рутинные, повторяющиеся и хорошо формализуемые задачи.',
+];
+
+export const DELEGATION_DONT = [
+  'Прерогативы управления, ключевые задачи (цели отдела, пересмотр зарплаты, задачи личного характера) и критические решения, где нужна личная ответственность лидера.',
+  'Частные задачи без полной ответственности: предоставление только части работы не позволит почувствовать значимость достигнутого результата.',
+  'Ситуации с высоким риском, где команде пока не хватает контекста или опыта.',
+];
+
 export type FeedbackType = 'supporting' | 'correcting' | 'developing' | null;
 
 export const FEEDBACK_OPTIONS: {
@@ -429,13 +574,32 @@ export interface SavedNote {
   updatedAt: number;
 }
 
+export interface OneToOneQuestion {
+  id: string;
+  text: string;
+  answer: string;
+  createdAt: number;
+}
+
+export interface EmployeeProfileInput {
+  firstName: string;
+  lastName: string;
+  projects: string[];
+  projectManagers: string[];
+}
+
 export interface Employee {
   id: string;
   firstName: string;
   lastName: string;
+  projects: string[];
+  projectManagers: string[];
   needs: NeedsMap;
   metrics: EmployeeMetric[];
   leadershipStyle: LeadershipStyle;
+  oneToOnePrep: string;
+  oneToOneAfter: string;
+  oneToOneQuestions: OneToOneQuestion[];
   oneToOneNotes: SavedNote[];
   delegationNotes: SavedNote[];
   feedbackType: FeedbackType;
@@ -450,14 +614,27 @@ export function createEmptyNeeds(): NeedsMap {
   }, {} as NeedsMap);
 }
 
-export function createEmployee(firstName: string, lastName: string): Employee {
+export function normalizeStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function createEmployee(profile: EmployeeProfileInput): Employee {
   return {
     id: crypto.randomUUID(),
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
+    firstName: profile.firstName.trim(),
+    lastName: profile.lastName.trim(),
+    projects: normalizeStringList(profile.projects),
+    projectManagers: normalizeStringList(profile.projectManagers),
     needs: createEmptyNeeds(),
     metrics: [],
     leadershipStyle: null,
+    oneToOnePrep: '',
+    oneToOneAfter: '',
+    oneToOneQuestions: [],
     oneToOneNotes: [],
     delegationNotes: [],
     feedbackType: null,
@@ -496,6 +673,26 @@ export function normalizeSavedNotes(value: unknown): SavedNote[] {
   }
 
   return [];
+}
+
+export function normalizeOneToOneQuestions(value: unknown): OneToOneQuestion[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (question): question is OneToOneQuestion =>
+        !!question &&
+        typeof question === 'object' &&
+        typeof question.id === 'string' &&
+        typeof question.text === 'string' &&
+        typeof question.createdAt === 'number',
+    )
+    .map((question) => ({
+      id: question.id,
+      text: question.text,
+      answer: typeof question.answer === 'string' ? question.answer : '',
+      createdAt: question.createdAt,
+    }));
 }
 
 export function normalizeMetrics(value: unknown): EmployeeMetric[] {
@@ -548,7 +745,14 @@ export function createCustomMetric(name: string): EmployeeMetric {
 export function normalizeEmployee(employee: Employee): Employee {
   return {
     ...employee,
+    projects: normalizeStringList(employee.projects),
+    projectManagers: normalizeStringList(employee.projectManagers),
     metrics: normalizeMetrics(employee.metrics),
+    oneToOnePrep:
+      typeof employee.oneToOnePrep === 'string' ? employee.oneToOnePrep : '',
+    oneToOneAfter:
+      typeof employee.oneToOneAfter === 'string' ? employee.oneToOneAfter : '',
+    oneToOneQuestions: normalizeOneToOneQuestions(employee.oneToOneQuestions),
     oneToOneNotes: normalizeSavedNotes(employee.oneToOneNotes),
     delegationNotes: normalizeSavedNotes(employee.delegationNotes),
     feedbackType: employee.feedbackType ?? null,

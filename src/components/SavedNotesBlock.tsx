@@ -8,6 +8,7 @@ import { useIsMobile } from '../hooks/useBreakpoint';
 interface SavedNotesBlockProps {
   notes: SavedNote[];
   placeholder?: string;
+  hideComposer?: boolean;
   onAdd: (text: string) => void;
   onUpdate: (noteId: string, text: string) => void;
 }
@@ -19,6 +20,7 @@ function formatNoteDate(timestamp: number): string {
 export function SavedNotesBlock({
   notes,
   placeholder = 'Введите заметку...',
+  hideComposer = false,
   onAdd,
   onUpdate,
 }: SavedNotesBlockProps) {
@@ -58,25 +60,27 @@ export function SavedNotesBlock({
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
-      <div>
-        <Input.TextArea
-          rows={isMobile ? 4 : 5}
-          placeholder={placeholder}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={handleSave}
-          disabled={!draft.trim()}
-          block={isMobile}
-          size={isMobile ? 'large' : 'middle'}
-          style={{ marginTop: 12 }}
-        >
-          Сохранить заметку
-        </Button>
-      </div>
+      {!hideComposer && (
+        <div>
+          <Input.TextArea
+            rows={isMobile ? 4 : 5}
+            placeholder={placeholder}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={handleSave}
+            disabled={!draft.trim()}
+            block={isMobile}
+            size={isMobile ? 'large' : 'middle'}
+            style={{ marginTop: 12 }}
+          >
+            Сохранить заметку
+          </Button>
+        </div>
+      )}
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>

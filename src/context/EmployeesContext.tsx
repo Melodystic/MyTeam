@@ -19,8 +19,10 @@ import {
   createEmployee,
   METRIC_MAX,
   normalizeEmployee,
+  normalizeStringList,
   type Employee,
   type EmployeeMetric,
+  type EmployeeProfileInput,
   type FeedbackType,
   type LeadershipStyle,
   type NeedKey,
@@ -30,7 +32,8 @@ import {
 interface EmployeesContextValue {
   employees: Employee[];
   loading: boolean;
-  addEmployee: (firstName: string, lastName: string) => Promise<Employee>;
+  addEmployee: (profile: EmployeeProfileInput) => Promise<Employee>;
+  updateEmployeeProfile: (id: string, profile: EmployeeProfileInput) => void;
   removeEmployee: (id: string) => Promise<void>;
   getById: (id: string) => Employee | undefined;
   updateNeedPercent: (id: string, need: NeedKey, delta: number) => void;
@@ -41,6 +44,12 @@ interface EmployeesContextValue {
   updateMetricValue: (id: string, metricId: string, delta: number) => void;
   updateMetricComment: (id: string, metricId: string, comment: string) => void;
   updateLeadershipStyle: (id: string, style: LeadershipStyle) => void;
+  updateOneToOnePrep: (id: string, prep: string) => void;
+  updateOneToOneAfter: (id: string, notes: string) => void;
+  addOneToOneQuestion: (id: string, text: string) => void;
+  updateOneToOneQuestion: (id: string, questionId: string, text: string) => void;
+  updateOneToOneQuestionAnswer: (id: string, questionId: string, answer: string) => void;
+  removeOneToOneQuestion: (id: string, questionId: string) => void;
   addOneToOneNote: (id: string, text: string) => void;
   updateOneToOneNote: (id: string, noteId: string, text: string) => void;
   addDelegationNote: (id: string, text: string) => void;
@@ -93,12 +102,25 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
   );
 
   const addEmployee = useCallback(
-    async (firstName: string, lastName: string) => {
-      const employee = createEmployee(firstName, lastName);
+    async (profile: EmployeeProfileInput) => {
+      const employee = createEmployee(profile);
       commitEmployee(employee);
       return employee;
     },
     [commitEmployee],
+  );
+
+  const updateEmployeeProfile = useCallback(
+    (id: string, profile: EmployeeProfileInput) => {
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        firstName: profile.firstName.trim(),
+        lastName: profile.lastName.trim(),
+        projects: normalizeStringList(profile.projects),
+        projectManagers: normalizeStringList(profile.projectManagers),
+      }));
+    },
+    [updateEmployee],
   );
 
   const removeEmployee = useCallback(async (id: string) => {
@@ -212,6 +234,84 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployee(id, (employee) => ({
         ...employee,
         leadershipStyle: style,
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateOneToOnePrep = useCallback(
+    (id: string, prep: string) => {
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOnePrep: prep,
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateOneToOneAfter = useCallback(
+    (id: string, notes: string) => {
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOneAfter: notes,
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const addOneToOneQuestion = useCallback(
+    (id: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOneQuestions: [
+          ...(employee.oneToOneQuestions ?? []),
+          {
+            id: crypto.randomUUID(),
+            text: trimmed,
+            answer: '',
+            createdAt: Date.now(),
+          },
+        ],
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateOneToOneQuestion = useCallback(
+    (id: string, questionId: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOneQuestions: (employee.oneToOneQuestions ?? []).map((question) =>
+          question.id === questionId ? { ...question, text: trimmed } : question,
+        ),
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateOneToOneQuestionAnswer = useCallback(
+    (id: string, questionId: string, answer: string) => {
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOneQuestions: (employee.oneToOneQuestions ?? []).map((question) =>
+          question.id === questionId ? { ...question, answer } : question,
+        ),
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const removeOneToOneQuestion = useCallback(
+    (id: string, questionId: string) => {
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        oneToOneQuestions: (employee.oneToOneQuestions ?? []).filter(
+          (question) => question.id !== questionId,
+        ),
       }));
     },
     [updateEmployee],
@@ -353,6 +453,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       employees,
       loading,
       addEmployee,
+      updateEmployeeProfile,
       removeEmployee,
       getById,
       updateNeedPercent,
@@ -363,6 +464,12 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateMetricValue,
       updateMetricComment,
       updateLeadershipStyle,
+      updateOneToOnePrep,
+      updateOneToOneAfter,
+      addOneToOneQuestion,
+      updateOneToOneQuestion,
+      updateOneToOneQuestionAnswer,
+      removeOneToOneQuestion,
       addOneToOneNote,
       updateOneToOneNote,
       addDelegationNote,
@@ -376,6 +483,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       employees,
       loading,
       addEmployee,
+      updateEmployeeProfile,
       removeEmployee,
       getById,
       updateNeedPercent,
@@ -386,6 +494,12 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateMetricValue,
       updateMetricComment,
       updateLeadershipStyle,
+      updateOneToOnePrep,
+      updateOneToOneAfter,
+      addOneToOneQuestion,
+      updateOneToOneQuestion,
+      updateOneToOneQuestionAnswer,
+      removeOneToOneQuestion,
       addOneToOneNote,
       updateOneToOneNote,
       addDelegationNote,

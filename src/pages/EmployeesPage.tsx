@@ -8,29 +8,96 @@ import {
   List,
   Modal,
   Popconfirm,
+  Select,
+  Space,
   Typography,
   message,
   theme,
 } from 'antd';
-import { DeleteOutlined, PlusOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  RightOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { useEmployees } from '../context/EmployeesContext';
-import { getFullName } from '../types/employee';
+import { getFullName, type Employee } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
+interface EmployeeFormValues {
+  firstName: string;
+  lastName: string;
+  projects?: string[];
+  projectManagers?: string[];
+}
+
+function MetaLine({
+  label,
+  values,
+}: {
+  label: string;
+  values: string[];
+}) {
+  if (values.length === 0) return null;
+
+  return (
+    <Typography.Text type="secondary" style={{ fontSize: 13, display: 'block' }}>
+      {label}: {values.join(', ')}
+    </Typography.Text>
+  );
+}
+
 export function EmployeesPage() {
-  const { employees, loading, addEmployee, removeEmployee } = useEmployees();
+  const { employees, loading, addEmployee, updateEmployeeProfile, removeEmployee } =
+    useEmployees();
   const [open, setOpen] = useState(false);
-  const [form] = Form.useForm<{ firstName: string; lastName: string }>();
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [form] = Form.useForm<EmployeeFormValues>();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
 
-  const handleAdd = async () => {
+  const openCreate = () => {
+    setEditingEmployee(null);
+    form.resetFields();
+    setOpen(true);
+  };
+
+  const openEdit = (employee: Employee) => {
+    setEditingEmployee(employee);
+    form.setFieldsValue({
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      projects: employee.projects,
+      projectManagers: employee.projectManagers,
+    });
+    setOpen(true);
+  };
+
+  const closeModal = () => {
+    setOpen(false);
+    setEditingEmployee(null);
+    form.resetFields();
+  };
+
+  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      await addEmployee(values.firstName, values.lastName);
-      message.success('Сотрудник добавлен');
-      form.resetFields();
-      setOpen(false);
+      const profile = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        projects: values.projects ?? [],
+        projectManagers: values.projectManagers ?? [],
+      };
+
+      if (editingEmployee) {
+        updateEmployeeProfile(editingEmployee.id, profile);
+        message.success('Сотрудник обновлён');
+      } else {
+        await addEmployee(profile);
+        message.success('Сотрудник добавлен');
+      }
+      closeModal();
     } catch {
       // validation errors are shown by Form
     }
@@ -60,7 +127,7 @@ export function EmployeesPage() {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => setOpen(true)}
+          onClick={openCreate}
           block={isMobile}
           size={isMobile ? 'large' : 'middle'}
         >
@@ -90,6 +157,17 @@ export function EmployeesPage() {
               gap: 8,
             }}
             actions={[
+              <Button
+                key="edit"
+                type="text"
+                icon={<EditOutlined />}
+                aria-label="Редактировать сотрудника"
+                style={isMobile ? { width: 40, height: 40 } : undefined}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEdit(employee);
+                }}
+              />,
               <Popconfirm
                 key="delete"
                 title="Удалить сотрудника?"
@@ -117,7 +195,7 @@ export function EmployeesPage() {
               to={`/employee/${employee.id}`}
               style={{
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 gap: 12,
                 flex: 1,
                 minWidth: 0,
@@ -127,13 +205,31 @@ export function EmployeesPage() {
               }}
             >
               <UserOutlined
-                style={{ fontSize: 18, color: token.colorPrimary, flexShrink: 0 }}
+                style={{
+                  fontSize: 18,
+                  color: token.colorPrimary,
+                  flexShrink: 0,
+                  marginTop: 2,
+                }}
               />
-              <Typography.Text strong ellipsis style={{ flex: 1, minWidth: 0 }}>
-                {getFullName(employee)}
-              </Typography.Text>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Typography.Text strong ellipsis style={{ display: 'block' }}>
+                  {getFullName(employee)}
+                </Typography.Text>
+                <Space direction="vertical" size={0} style={{ width: '100%', marginTop: 2 }}>
+                  <MetaLine label="Проекты" values={employee.projects} />
+                  <MetaLine label="РП" values={employee.projectManagers} />
+                </Space>
+              </div>
               {isMobile && (
-                <RightOutlined style={{ color: token.colorTextQuaternary, fontSize: 12 }} />
+                <RightOutlined
+                  style={{
+                    color: token.colorTextQuaternary,
+                    fontSize: 12,
+                    marginTop: 4,
+                    flexShrink: 0,
+                  }}
+                />
               )}
             </Link>
           </List.Item>
@@ -141,14 +237,11 @@ export function EmployeesPage() {
       />
 
       <Modal
-        title="Новый сотрудник"
+        title={editingEmployee ? 'Редактировать сотрудника' : 'Новый сотрудник'}
         open={open}
-        onCancel={() => {
-          setOpen(false);
-          form.resetFields();
-        }}
-        onOk={handleAdd}
-        okText="Добавить"
+        onCancel={closeModal}
+        onOk={() => void handleSubmit()}
+        okText={editingEmployee ? 'Сохранить' : 'Добавить'}
         cancelText="Отмена"
         destroyOnHidden
         centered
@@ -168,6 +261,26 @@ export function EmployeesPage() {
             rules={[{ required: true, message: 'Введите имя' }]}
           >
             <Input placeholder="Иван" size={isMobile ? 'large' : 'middle'} />
+          </Form.Item>
+          <Form.Item name="projects" label="Проекты">
+            <Select
+              mode="tags"
+              allowClear
+              placeholder="Введите проект и нажмите Enter"
+              tokenSeparators={[',']}
+              size={isMobile ? 'large' : 'middle'}
+              open={false}
+            />
+          </Form.Item>
+          <Form.Item name="projectManagers" label="Руководители проектов">
+            <Select
+              mode="tags"
+              allowClear
+              placeholder="Введите РП и нажмите Enter"
+              tokenSeparators={[',']}
+              size={isMobile ? 'large' : 'middle'}
+              open={false}
+            />
           </Form.Item>
         </Form>
       </Modal>
