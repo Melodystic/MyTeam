@@ -17,7 +17,7 @@ export function EmployeeDetailPage() {
   const {
     loading,
     getById,
-    updateNeedPercent,
+    updateNeedScore,
     updateNeedMark,
     updateNeedComment,
     addMetrics,
@@ -130,8 +130,8 @@ export function EmployeeDetailPage() {
               children: (
                 <NeedsBlock
                   employee={employee}
-                  onChangePercent={(need, delta) =>
-                    void updateNeedPercent(employee.id, need, delta)
+                  onChangeScore={(need, delta) =>
+                    void updateNeedScore(employee.id, need, delta)
                   }
                   onChangeMark={(need, mark) =>
                     void updateNeedMark(employee.id, need, mark)

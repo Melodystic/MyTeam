@@ -1,7 +1,13 @@
 import { useState, type CSSProperties, type FormEvent } from 'react';
-import { Button, Empty, Input, Space, Typography, theme } from 'antd';
+import { Button, Collapse, Empty, Input, Space, Table, Typography, theme } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
-import type { OneToOneQuestion, SavedNote } from '../types/employee';
+import {
+  ONE_TO_ONE_AGENDA,
+  ONE_TO_ONE_FREQUENCY,
+  ONE_TO_ONE_GOAL,
+  type OneToOneQuestion,
+  type SavedNote,
+} from '../types/employee';
 import { SavedNotesBlock } from './SavedNotesBlock';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
@@ -79,6 +85,73 @@ export function OneToOneBlock({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div
+        style={{
+          padding: isMobile ? 12 : 16,
+          borderRadius: token.borderRadiusLG,
+          background: token.colorFillAlter,
+          border: `1px solid ${token.colorBorderSecondary}`,
+        }}
+      >
+        <Typography.Paragraph style={{ marginBottom: 8 }}>
+          <Typography.Text strong>Цель: </Typography.Text>
+          <Typography.Text type="secondary">{ONE_TO_ONE_GOAL}</Typography.Text>
+        </Typography.Paragraph>
+        <Typography.Paragraph style={{ marginBottom: 0 }}>
+          <Typography.Text strong>Частота: </Typography.Text>
+          <Typography.Text type="secondary">
+            {ONE_TO_ONE_FREQUENCY[0]}
+            <br />
+            → {ONE_TO_ONE_FREQUENCY[1]}
+          </Typography.Text>
+        </Typography.Paragraph>
+      </div>
+
+      <Collapse
+        items={[
+          {
+            key: 'agenda',
+            label: 'Структура встречи (~30 мин)',
+            children: (
+              <Table
+                size="small"
+                pagination={false}
+                rowKey="stage"
+                scroll={isMobile ? { x: 720 } : undefined}
+                dataSource={ONE_TO_ONE_AGENDA}
+                columns={[
+                  {
+                    title: 'Этап',
+                    dataIndex: 'stage',
+                    key: 'stage',
+                    width: isMobile ? 120 : 160,
+                    render: (value: string) => (
+                      <Typography.Text strong>{value}</Typography.Text>
+                    ),
+                  },
+                  {
+                    title: 'Время',
+                    dataIndex: 'time',
+                    key: 'time',
+                    width: 80,
+                  },
+                  {
+                    title: 'Что делает руководитель',
+                    dataIndex: 'manager',
+                    key: 'manager',
+                  },
+                  {
+                    title: 'Что делает сотрудник',
+                    dataIndex: 'employee',
+                    key: 'employee',
+                  },
+                ]}
+              />
+            ),
+          },
+        ]}
+      />
+
       <div
         style={{
           display: 'grid',
@@ -162,88 +235,88 @@ export function OneToOneBlock({
               const isEditing = editingId === question.id;
 
               return (
-              <div
-                key={question.id}
-                style={{
-                  padding: isMobile ? 12 : 16,
-                  borderRadius: token.borderRadiusLG,
-                  background: token.colorFillAlter,
-                  border: `1px solid ${token.colorBorderSecondary}`,
-                }}
-              >
                 <div
+                  key={question.id}
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: 8,
-                    marginBottom: 12,
+                    padding: isMobile ? 12 : 16,
+                    borderRadius: token.borderRadiusLG,
+                    background: token.colorFillAlter,
+                    border: `1px solid ${token.colorBorderSecondary}`,
                   }}
                 >
-                  {isEditing ? (
-                    <Input.TextArea
-                      rows={2}
-                      value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
-                      autoFocus
-                      style={{ flex: 1 }}
-                    />
-                  ) : (
-                    <>
-                      <Typography.Text strong style={{ whiteSpace: 'pre-wrap', flex: 1 }}>
-                        {index + 1}. {question.text}
-                      </Typography.Text>
-                      <Space size={4}>
-                        <Button
-                          type="text"
-                          icon={<EditOutlined />}
-                          onClick={() => startEdit(question)}
-                          aria-label="Редактировать вопрос"
-                          size={isMobile ? 'middle' : 'small'}
-                        />
-                        <Button
-                          type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          onClick={() => onRemoveQuestion(question.id)}
-                          aria-label="Удалить вопрос"
-                          size={isMobile ? 'middle' : 'small'}
-                        />
-                      </Space>
-                    </>
-                  )}
-                </div>
-                {isEditing && (
-                  <Space
-                    direction={isMobile ? 'vertical' : 'horizontal'}
-                    style={{ width: isMobile ? '100%' : undefined, marginBottom: 12 }}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
                   >
-                    <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={saveEdit}
-                      disabled={!editingText.trim()}
-                      block={isMobile}
-                      size={isMobile ? 'large' : 'middle'}
+                    {isEditing ? (
+                      <Input.TextArea
+                        rows={2}
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        autoFocus
+                        style={{ flex: 1 }}
+                      />
+                    ) : (
+                      <>
+                        <Typography.Text strong style={{ whiteSpace: 'pre-wrap', flex: 1 }}>
+                          {index + 1}. {question.text}
+                        </Typography.Text>
+                        <Space size={4}>
+                          <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => startEdit(question)}
+                            aria-label="Редактировать вопрос"
+                            size={isMobile ? 'middle' : 'small'}
+                          />
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => onRemoveQuestion(question.id)}
+                            aria-label="Удалить вопрос"
+                            size={isMobile ? 'middle' : 'small'}
+                          />
+                        </Space>
+                      </>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <Space
+                      direction={isMobile ? 'vertical' : 'horizontal'}
+                      style={{ width: isMobile ? '100%' : undefined, marginBottom: 12 }}
                     >
-                      Сохранить
-                    </Button>
-                    <Button
-                      onClick={cancelEdit}
-                      block={isMobile}
-                      size={isMobile ? 'large' : 'middle'}
-                    >
-                      Отмена
-                    </Button>
-                  </Space>
-                )}
-                <Input.TextArea
-                  rows={2}
-                  placeholder="Ответ на вопрос..."
-                  value={question.answer}
-                  onChange={(e) => onChangeAnswer(question.id, e.target.value)}
-                />
-              </div>
+                      <Button
+                        type="primary"
+                        icon={<SaveOutlined />}
+                        onClick={saveEdit}
+                        disabled={!editingText.trim()}
+                        block={isMobile}
+                        size={isMobile ? 'large' : 'middle'}
+                      >
+                        Сохранить
+                      </Button>
+                      <Button
+                        onClick={cancelEdit}
+                        block={isMobile}
+                        size={isMobile ? 'large' : 'middle'}
+                      >
+                        Отмена
+                      </Button>
+                    </Space>
+                  )}
+                  <Input.TextArea
+                    rows={2}
+                    placeholder="Ответ на вопрос..."
+                    value={question.answer}
+                    onChange={(e) => onChangeAnswer(question.id, e.target.value)}
+                  />
+                </div>
               );
             })}
           </div>

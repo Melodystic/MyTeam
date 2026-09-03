@@ -18,6 +18,7 @@ import {
 import {
   createEmployee,
   METRIC_MAX,
+  NEED_MAX,
   normalizeEmployee,
   normalizeStringList,
   type Employee,
@@ -36,7 +37,7 @@ interface EmployeesContextValue {
   updateEmployeeProfile: (id: string, profile: EmployeeProfileInput) => void;
   removeEmployee: (id: string) => Promise<void>;
   getById: (id: string) => Employee | undefined;
-  updateNeedPercent: (id: string, need: NeedKey, delta: number) => void;
+  updateNeedScore: (id: string, need: NeedKey, delta: number) => void;
   updateNeedMark: (id: string, need: NeedKey, mark: NeedMark) => void;
   updateNeedComment: (id: string, need: NeedKey, comment: string) => void;
   addMetrics: (id: string, metrics: EmployeeMetric[]) => void;
@@ -133,20 +134,16 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     [employees],
   );
 
-  const updateNeedPercent = useCallback(
+  const updateNeedScore = useCallback(
     (id: string, need: NeedKey, delta: number) => {
       updateEmployee(id, (employee) => {
-        const current = employee.needs[need].percent;
-        const usedOthers = Object.entries(employee.needs)
-          .filter(([key]) => key !== need)
-          .reduce((sum, [, value]) => sum + value.percent, 0);
-        const maxAllowed = 100 - usedOthers;
-        const nextPercent = Math.min(maxAllowed, Math.max(0, current + delta));
+        const current = employee.needs[need].score;
+        const nextScore = Math.min(NEED_MAX, Math.max(0, current + delta));
         return {
           ...employee,
           needs: {
             ...employee.needs,
-            [need]: { ...employee.needs[need], percent: nextPercent },
+            [need]: { ...employee.needs[need], score: nextScore },
           },
         };
       });
@@ -456,7 +453,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployeeProfile,
       removeEmployee,
       getById,
-      updateNeedPercent,
+      updateNeedScore,
       updateNeedMark,
       updateNeedComment,
       addMetrics,
@@ -486,7 +483,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployeeProfile,
       removeEmployee,
       getById,
-      updateNeedPercent,
+      updateNeedScore,
       updateNeedMark,
       updateNeedComment,
       addMetrics,

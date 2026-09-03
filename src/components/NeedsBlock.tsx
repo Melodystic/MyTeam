@@ -3,8 +3,8 @@ import { InfoCircleOutlined, MinusOutlined, PlusOutlined } from '@ant-design/ico
 import {
   NEED_KEYS,
   NEED_LABELS,
+  NEED_MAX,
   NEED_TOOLTIPS,
-  getUnusedPercent,
   type Employee,
   type NeedKey,
   type NeedMark,
@@ -14,7 +14,7 @@ import { NeedsRadarChart } from './NeedsRadarChart';
 
 interface NeedsBlockProps {
   employee: Employee;
-  onChangePercent: (need: NeedKey, delta: number) => void;
+  onChangeScore: (need: NeedKey, delta: number) => void;
   onChangeMark: (need: NeedKey, mark: NeedMark) => void;
   onChangeComment: (need: NeedKey, comment: string) => void;
 }
@@ -34,43 +34,18 @@ const MARK_META: Record<NeedMark, { color: string; label: string; tip: string }>
 
 export function NeedsBlock({
   employee,
-  onChangePercent,
+  onChangeScore,
   onChangeMark,
   onChangeComment,
 }: NeedsBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
-  const unused = getUnusedPercent(employee.needs);
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'flex-start' : 'center',
-          marginBottom: 16,
-          gap: 12,
-          flexDirection: isMobile ? 'column' : 'row',
-          flexWrap: 'wrap',
-        }}
-      >
-        <Typography.Text type="secondary">
-          Распределите 100% между потребностями шагами по 5%
-        </Typography.Text>
-        <Typography.Text
-          strong
-          style={{
-            padding: '4px 12px',
-            borderRadius: token.borderRadius,
-            background: unused > 0 ? token.colorWarningBg : token.colorSuccessBg,
-            color: unused > 0 ? token.colorWarningText : token.colorSuccessText,
-            alignSelf: isMobile ? 'flex-start' : undefined,
-          }}
-        >
-          Неиспользовано: {unused}%
-        </Typography.Text>
-      </div>
+      <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+        Оцените каждую потребность по шкале 0–{NEED_MAX}
+      </Typography.Text>
 
       <NeedsRadarChart needs={employee.needs} />
 
@@ -78,14 +53,14 @@ export function NeedsBlock({
         {NEED_KEYS.map((key) => {
           const need = employee.needs[key];
           const mark = MARK_META[need.mark];
-          const canIncrease = unused >= 5;
-          const canDecrease = need.percent >= 5;
+          const canIncrease = need.score < NEED_MAX;
+          const canDecrease = need.score > 0;
 
           return (
             <div
               key={key}
               style={{
-                padding: isMobile ? 12 : 12,
+                padding: 12,
                 borderRadius: token.borderRadiusLG,
                 background: token.colorFillAlter,
               }}
@@ -156,21 +131,21 @@ export function NeedsBlock({
                     size={isMobile ? 'middle' : 'small'}
                     icon={<MinusOutlined />}
                     disabled={!canDecrease}
-                    onClick={() => onChangePercent(key, -5)}
+                    onClick={() => onChangeScore(key, -1)}
                     aria-label={`Уменьшить ${NEED_LABELS[key]}`}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                   <Typography.Text
                     strong
-                    style={{ minWidth: 48, textAlign: 'center', display: 'inline-block' }}
+                    style={{ minWidth: 36, textAlign: 'center', display: 'inline-block' }}
                   >
-                    {need.percent}%
+                    {need.score}
                   </Typography.Text>
                   <Button
                     size={isMobile ? 'middle' : 'small'}
                     icon={<PlusOutlined />}
                     disabled={!canIncrease}
-                    onClick={() => onChangePercent(key, 5)}
+                    onClick={() => onChangeScore(key, 1)}
                     aria-label={`Увеличить ${NEED_LABELS[key]}`}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />

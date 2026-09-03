@@ -110,6 +110,64 @@ export const LEADERSHIP_REMEMBER = [
   'Чем точнее руководитель соотносит стиль с мотивацией и компетентностью, тем выше шанс на результат без лишнего давления и потерь вовлеченности.',
 ];
 
+export const ONE_TO_ONE_GOAL =
+  'Построение доверия, развитие сотрудника, раннее выявление проблем.';
+
+export const ONE_TO_ONE_FREQUENCY = [
+  'еженедельно 30 мин (новичок или адаптация к новой должности)',
+  'не реже 2 раз/мес (стабильные)',
+] as const;
+
+export const ONE_TO_ONE_AGENDA: {
+  stage: string;
+  time: string;
+  manager: string;
+  employee: string;
+}[] = [
+  {
+    stage: 'Разминка',
+    time: '2 мин',
+    manager: 'Настраивает на диалог, задает неформальный вопрос',
+    employee: 'Делится настроением',
+  },
+  {
+    stage: 'Общие вопросы',
+    time: '5 мин',
+    manager: 'Спрашивает: «Как дела?», «Что радует/беспокоит?»',
+    employee: 'Рассказывает о текущем состоянии',
+  },
+  {
+    stage: 'Достижения и задачи',
+    time: '10 мин',
+    manager: 'Слушает, задает уточняющие вопросы по прогрессу',
+    employee: 'Рассказывает о сделанном, подсвечивает успехи',
+  },
+  {
+    stage: 'Трудности и блоки',
+    time: '5 мин',
+    manager: 'Помогает найти решение, убирает препятствия',
+    employee: 'Озвучивает проблемы, просит помощи',
+  },
+  {
+    stage: 'Обратная связь',
+    time: '5 мин',
+    manager: 'Дает конструктивный фидбек, отмечает рост',
+    employee: 'Слушает, задает вопросы, принимает фидбек',
+  },
+  {
+    stage: 'План действий',
+    time: '3 мин',
+    manager: 'Фиксирует договоренности',
+    employee: 'Договаривается о следующих шагах',
+  },
+  {
+    stage: 'Завершение',
+    time: '0 мин',
+    manager: 'Благодарит за встречу',
+    employee: 'Благодарит, резюмирует встречу',
+  },
+];
+
 export const SMART_CRITERIA: {
   letter: string;
   word: string;
@@ -477,12 +535,15 @@ export const FEEDBACK_MODELS: FeedbackModel[] = [
 ];
 
 export interface NeedState {
-  percent: number;
+  /** Оценка по шкале 0–NEED_MAX */
+  score: number;
   mark: NeedMark;
   comment: string;
 }
 
 export type NeedsMap = Record<NeedKey, NeedState>;
+
+export const NEED_MAX = 5;
 
 export const METRIC_MAX = 10;
 
@@ -609,7 +670,7 @@ export interface Employee {
 
 export function createEmptyNeeds(): NeedsMap {
   return NEED_KEYS.reduce((acc, key) => {
-    acc[key] = { percent: 0, mark: 'K', comment: '' };
+    acc[key] = { score: 0, mark: 'K', comment: '' };
     return acc;
   }, {} as NeedsMap);
 }
@@ -742,11 +803,42 @@ export function createCustomMetric(name: string): EmployeeMetric {
   };
 }
 
+export function clampNeedScore(value: number): number {
+  // Старые данные хранили 0–100%; переводим в 0–5
+  const normalized = value > NEED_MAX ? Math.round(value / 20) : Math.round(value);
+  return Math.min(NEED_MAX, Math.max(0, normalized));
+}
+
+export function normalizeNeeds(value: unknown): NeedsMap {
+  const source =
+    value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+
+  return NEED_KEYS.reduce((acc, key) => {
+    const raw = source[key];
+    const item =
+      raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+    const rawScore =
+      typeof item.score === 'number'
+        ? item.score
+        : typeof item.percent === 'number'
+          ? item.percent
+          : 0;
+
+    acc[key] = {
+      score: clampNeedScore(rawScore),
+      mark: item.mark === 'OT' ? 'OT' : 'K',
+      comment: typeof item.comment === 'string' ? item.comment : '',
+    };
+    return acc;
+  }, {} as NeedsMap);
+}
+
 export function normalizeEmployee(employee: Employee): Employee {
   return {
     ...employee,
     projects: normalizeStringList(employee.projects),
     projectManagers: normalizeStringList(employee.projectManagers),
+    needs: normalizeNeeds(employee.needs),
     metrics: normalizeMetrics(employee.metrics),
     oneToOnePrep:
       typeof employee.oneToOnePrep === 'string' ? employee.oneToOnePrep : '',
@@ -758,11 +850,6 @@ export function normalizeEmployee(employee: Employee): Employee {
     feedbackType: employee.feedbackType ?? null,
     feedbackNotes: employee.feedbackNotes ?? '',
   };
-}
-
-export function getUnusedPercent(needs: NeedsMap): number {
-  const used = NEED_KEYS.reduce((sum, key) => sum + needs[key].percent, 0);
-  return 100 - used;
 }
 
 export function getFullName(employee: Employee): string {
