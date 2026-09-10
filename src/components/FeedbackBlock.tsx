@@ -1,4 +1,4 @@
-import { Alert, Collapse, Select, Space, Typography, theme } from 'antd';
+import { Alert, Collapse, Select, Space, Typography } from 'antd';
 import { NotesBlock } from './NotesBlock';
 import {
   CRITICISM_RULES,
@@ -34,7 +34,6 @@ export function FeedbackBlock({
   onChangeNotes,
   onAddColleagueFeedback,
 }: FeedbackBlockProps) {
-  const { token } = theme.useToken();
   const isMobile = useIsMobile();
   const selected = FEEDBACK_OPTIONS.find((option) => option.value === feedbackType);
 
@@ -123,70 +122,61 @@ export function FeedbackBlock({
         onAdd={onAddColleagueFeedback}
       />
 
-      <div
-        style={{
-          padding: 16,
-          borderRadius: token.borderRadiusLG,
-          background: token.colorFillAlter,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        }}
-      >
-        <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Как давать обратную связь
-        </Typography.Title>
-        <Space direction="vertical" size={12} style={{ width: '100%' }}>
-          {FEEDBACK_RULES.map((rule, index) => (
-            <div key={rule.title}>
-              <Typography.Text strong>
-                {index + 1}. {rule.title}
-              </Typography.Text>
-              <Typography.Paragraph type="secondary" style={{ marginBottom: 0, marginTop: 4 }}>
-                {rule.example}
-              </Typography.Paragraph>
-            </div>
-          ))}
-        </Space>
-      </div>
-
-      <div
-        style={{
-          padding: 16,
-          borderRadius: token.borderRadiusLG,
-          background: token.colorFillAlter,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        }}
-      >
-        <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Как давать фидбек
-        </Typography.Title>
-        <ul style={{ margin: 0, paddingLeft: 20 }}>
-          {FEEDBACK_HOW_TO.map((item) => (
-            <li key={item} style={{ marginBottom: 8 }}>
-              <Typography.Text type="secondary">{item}</Typography.Text>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div
-        style={{
-          padding: 16,
-          borderRadius: token.borderRadiusLG,
-          background: token.colorFillAlter,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        }}
-      >
-        <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Что важно помнить!
-        </Typography.Title>
-        <Space direction="vertical" size={8} style={{ width: '100%' }}>
-          {FEEDBACK_REMEMBER.map((item) => (
-            <Typography.Paragraph key={item} type="secondary" style={{ marginBottom: 0 }}>
-              {item}
-            </Typography.Paragraph>
-          ))}
-        </Space>
-      </div>
+      <Collapse
+        items={[
+          {
+            key: 'feedback-rules',
+            label: 'Как давать обратную связь',
+            children: (
+              <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                {FEEDBACK_RULES.map((rule, index) => (
+                  <div key={rule.title}>
+                    <Typography.Text strong>
+                      {index + 1}. {rule.title}
+                    </Typography.Text>
+                    <Typography.Paragraph
+                      type="secondary"
+                      style={{ marginBottom: 0, marginTop: 4 }}
+                    >
+                      {rule.example}
+                    </Typography.Paragraph>
+                  </div>
+                ))}
+              </Space>
+            ),
+          },
+          {
+            key: 'feedback-how-to',
+            label: 'Как давать фидбек',
+            children: (
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {FEEDBACK_HOW_TO.map((item) => (
+                  <li key={item} style={{ marginBottom: 8 }}>
+                    <Typography.Text type="secondary">{item}</Typography.Text>
+                  </li>
+                ))}
+              </ul>
+            ),
+          },
+          {
+            key: 'feedback-remember',
+            label: 'Что важно помнить!',
+            children: (
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                {FEEDBACK_REMEMBER.map((item) => (
+                  <Typography.Paragraph
+                    key={item}
+                    type="secondary"
+                    style={{ marginBottom: 0 }}
+                  >
+                    {item}
+                  </Typography.Paragraph>
+                ))}
+              </Space>
+            ),
+          },
+        ]}
+      />
 
       <Collapse
         items={[
