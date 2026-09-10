@@ -651,6 +651,14 @@ export interface OneToOneQuestion {
   createdAt: number;
 }
 
+export interface ColleagueFeedback {
+  id: string;
+  colleagueName: string;
+  position: string;
+  comment: string;
+  createdAt: number;
+}
+
 export interface EmployeeProfileInput {
   firstName: string;
   lastName: string;
@@ -674,6 +682,7 @@ export interface Employee {
   delegationNotes: SavedNote[];
   feedbackType: FeedbackType;
   feedbackNotes: string;
+  colleagueFeedback: ColleagueFeedback[];
   createdAt: number;
 }
 
@@ -709,6 +718,7 @@ export function createEmployee(profile: EmployeeProfileInput): Employee {
     delegationNotes: [],
     feedbackType: null,
     feedbackNotes: '',
+    colleagueFeedback: [],
     createdAt: Date.now(),
   };
 }
@@ -817,6 +827,29 @@ export function normalizeOneToOneQuestions(value: unknown): OneToOneQuestion[] {
     }));
 }
 
+export function normalizeColleagueFeedback(value: unknown): ColleagueFeedback[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (feedback): feedback is ColleagueFeedback =>
+        !!feedback &&
+        typeof feedback === 'object' &&
+        typeof feedback.id === 'string' &&
+        typeof feedback.colleagueName === 'string' &&
+        typeof feedback.position === 'string' &&
+        typeof feedback.comment === 'string' &&
+        typeof feedback.createdAt === 'number',
+    )
+    .map((feedback) => ({
+      id: feedback.id,
+      colleagueName: feedback.colleagueName,
+      position: feedback.position,
+      comment: feedback.comment,
+      createdAt: feedback.createdAt,
+    }));
+}
+
 export function normalizeMetrics(value: unknown): EmployeeMetric[] {
   if (!Array.isArray(value)) return [];
 
@@ -910,6 +943,7 @@ export function normalizeEmployee(employee: Employee): Employee {
     delegationNotes: normalizeSavedNotes(employee.delegationNotes),
     feedbackType: employee.feedbackType ?? null,
     feedbackNotes: employee.feedbackNotes ?? '',
+    colleagueFeedback: normalizeColleagueFeedback(employee.colleagueFeedback),
   };
 }
 

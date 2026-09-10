@@ -37,6 +37,7 @@ export function EmployeeDetailPage() {
     updateDelegationNote,
     updateFeedbackType,
     updateFeedbackNotes,
+    addColleagueFeedback,
   } = useEmployees();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
@@ -224,8 +225,17 @@ export function EmployeeDetailPage() {
                 <FeedbackBlock
                   feedbackType={employee.feedbackType}
                   feedbackNotes={employee.feedbackNotes}
+                  colleagueFeedback={employee.colleagueFeedback}
                   onChangeType={(type) => void updateFeedbackType(employee.id, type)}
                   onChangeNotes={(notes) => void updateFeedbackNotes(employee.id, notes)}
+                  onAddColleagueFeedback={(colleagueName, position, comment) =>
+                    addColleagueFeedback(
+                      employee.id,
+                      colleagueName,
+                      position,
+                      comment,
+                    )
+                  }
                 />
               ),
             },

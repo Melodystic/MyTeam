@@ -7,22 +7,32 @@ import {
   FEEDBACK_OPTIONS,
   FEEDBACK_REMEMBER,
   FEEDBACK_RULES,
+  type ColleagueFeedback,
   type FeedbackType,
 } from '../types/employee';
+import { ColleagueFeedbackBlock } from './ColleagueFeedbackBlock';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
 interface FeedbackBlockProps {
   feedbackType: FeedbackType;
   feedbackNotes: string;
+  colleagueFeedback: ColleagueFeedback[];
   onChangeType: (type: FeedbackType) => void;
   onChangeNotes: (notes: string) => void;
+  onAddColleagueFeedback: (
+    colleagueName: string,
+    position: string,
+    comment: string,
+  ) => void;
 }
 
 export function FeedbackBlock({
   feedbackType,
   feedbackNotes,
+  colleagueFeedback,
   onChangeType,
   onChangeNotes,
+  onAddColleagueFeedback,
 }: FeedbackBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
@@ -107,6 +117,11 @@ export function FeedbackBlock({
           onChange={onChangeNotes}
         />
       </div>
+
+      <ColleagueFeedbackBlock
+        feedback={colleagueFeedback}
+        onAdd={onAddColleagueFeedback}
+      />
 
       <div
         style={{

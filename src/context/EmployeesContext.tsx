@@ -67,6 +67,12 @@ interface EmployeesContextValue {
   updateDelegationNote: (id: string, noteId: string, text: string) => void;
   updateFeedbackType: (id: string, type: FeedbackType) => void;
   updateFeedbackNotes: (id: string, notes: string) => void;
+  addColleagueFeedback: (
+    id: string,
+    colleagueName: string,
+    position: string,
+    comment: string,
+  ) => void;
   exportDatabase: () => Promise<void>;
   importDatabase: (file: File) => Promise<void>;
 }
@@ -432,6 +438,35 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     [updateEmployee],
   );
 
+  const addColleagueFeedback = useCallback(
+    (
+      id: string,
+      colleagueName: string,
+      position: string,
+      comment: string,
+    ) => {
+      const trimmedName = colleagueName.trim();
+      const trimmedPosition = position.trim();
+      const trimmedComment = comment.trim();
+      if (!trimmedName || !trimmedPosition || !trimmedComment) return;
+
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        colleagueFeedback: [
+          {
+            id: crypto.randomUUID(),
+            colleagueName: trimmedName,
+            position: trimmedPosition,
+            comment: trimmedComment,
+            createdAt: Date.now(),
+          },
+          ...employee.colleagueFeedback,
+        ],
+      }));
+    },
+    [updateEmployee],
+  );
+
   const exportDatabase = useCallback(async () => {
     const backup = await exportBackup();
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
@@ -505,6 +540,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateDelegationNote,
       updateFeedbackType,
       updateFeedbackNotes,
+      addColleagueFeedback,
       exportDatabase,
       importDatabase,
     }),
@@ -535,6 +571,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateDelegationNote,
       updateFeedbackType,
       updateFeedbackNotes,
+      addColleagueFeedback,
       exportDatabase,
       importDatabase,
     ],
