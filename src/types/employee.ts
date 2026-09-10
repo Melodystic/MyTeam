@@ -659,19 +659,22 @@ export interface ColleagueFeedback {
   createdAt: number;
 }
 
+export interface ProjectAssignment {
+  project: string;
+  projectManager: string;
+}
+
 export interface EmployeeProfileInput {
   firstName: string;
   lastName: string;
-  projects: string[];
-  projectManagers: string[];
+  projectAssignments: ProjectAssignment[];
 }
 
 export interface Employee {
   id: string;
   firstName: string;
   lastName: string;
-  projects: string[];
-  projectManagers: string[];
+  projectAssignments: ProjectAssignment[];
   needs: NeedsMap;
   metrics: EmployeeMetric[];
   leadershipStyle: LeadershipStyle;
@@ -701,13 +704,48 @@ export function normalizeStringList(value: unknown): string[] {
     .filter(Boolean);
 }
 
+export function normalizeProjectAssignments(
+  value: unknown,
+  legacyProjects?: unknown,
+  legacyProjectManagers?: unknown,
+): ProjectAssignment[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter(
+        (assignment): assignment is Record<string, unknown> =>
+          !!assignment && typeof assignment === 'object',
+      )
+      .map((assignment) => ({
+        project:
+          typeof assignment.project === 'string'
+            ? assignment.project.trim()
+            : '',
+        projectManager:
+          typeof assignment.projectManager === 'string'
+            ? assignment.projectManager.trim()
+            : '',
+      }))
+      .filter(
+        (assignment) => assignment.project || assignment.projectManager,
+      );
+  }
+
+  const projects = normalizeStringList(legacyProjects);
+  const projectManagers = normalizeStringList(legacyProjectManagers);
+  const count = Math.max(projects.length, projectManagers.length);
+
+  return Array.from({ length: count }, (_, index) => ({
+    project: projects[index] ?? '',
+    projectManager: projectManagers[index] ?? '',
+  }));
+}
+
 export function createEmployee(profile: EmployeeProfileInput): Employee {
   return {
     id: crypto.randomUUID(),
     firstName: profile.firstName.trim(),
     lastName: profile.lastName.trim(),
-    projects: normalizeStringList(profile.projects),
-    projectManagers: normalizeStringList(profile.projectManagers),
+    projectAssignments: normalizeProjectAssignments(profile.projectAssignments),
     needs: createEmptyNeeds(),
     metrics: [],
     leadershipStyle: null,
@@ -928,10 +966,18 @@ export function normalizeNeeds(value: unknown): NeedsMap {
 }
 
 export function normalizeEmployee(employee: Employee): Employee {
+  const legacyEmployee = employee as Employee & {
+    projects?: unknown;
+    projectManagers?: unknown;
+  };
+
   return {
     ...employee,
-    projects: normalizeStringList(employee.projects),
-    projectManagers: normalizeStringList(employee.projectManagers),
+    projectAssignments: normalizeProjectAssignments(
+      employee.projectAssignments,
+      legacyEmployee.projects,
+      legacyEmployee.projectManagers,
+    ),
     needs: normalizeNeeds(employee.needs),
     metrics: normalizeMetrics(employee.metrics),
     oneToOnePrep:

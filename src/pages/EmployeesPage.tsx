@@ -8,7 +8,6 @@ import {
   List,
   Modal,
   Popconfirm,
-  Select,
   Space,
   Typography,
   message,
@@ -17,34 +16,46 @@ import {
 import {
   DeleteOutlined,
   EditOutlined,
+  MinusCircleOutlined,
   PlusOutlined,
   RightOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useEmployees } from '../context/EmployeesContext';
-import { getFullName, type Employee } from '../types/employee';
+import {
+  getFullName,
+  type Employee,
+  type ProjectAssignment,
+} from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
 interface EmployeeFormValues {
   firstName: string;
   lastName: string;
-  projects?: string[];
-  projectManagers?: string[];
+  projectAssignments?: ProjectAssignment[];
 }
 
-function MetaLine({
-  label,
-  values,
+function ProjectAssignmentsMeta({
+  assignments,
 }: {
-  label: string;
-  values: string[];
+  assignments: ProjectAssignment[];
 }) {
-  if (values.length === 0) return null;
+  if (assignments.length === 0) return null;
 
   return (
-    <Typography.Text type="secondary" style={{ fontSize: 13, display: 'block' }}>
-      {label}: {values.join(', ')}
-    </Typography.Text>
+    <Space direction="vertical" size={0} style={{ width: '100%' }}>
+      {assignments.map((assignment, index) => (
+        <Typography.Text
+          key={`${assignment.project}-${assignment.projectManager}-${index}`}
+          type="secondary"
+          style={{ fontSize: 13, display: 'block' }}
+        >
+          <Typography.Text strong>{assignment.project || 'Проект не указан'}</Typography.Text>
+          {' · РП: '}
+          {assignment.projectManager || 'не указан'}
+        </Typography.Text>
+      ))}
+    </Space>
   );
 }
 
@@ -68,8 +79,7 @@ export function EmployeesPage() {
     form.setFieldsValue({
       firstName: employee.firstName,
       lastName: employee.lastName,
-      projects: employee.projects,
-      projectManagers: employee.projectManagers,
+      projectAssignments: employee.projectAssignments,
     });
     setOpen(true);
   };
@@ -86,8 +96,7 @@ export function EmployeesPage() {
       const profile = {
         firstName: values.firstName,
         lastName: values.lastName,
-        projects: values.projects ?? [],
-        projectManagers: values.projectManagers ?? [],
+        projectAssignments: values.projectAssignments ?? [],
       };
 
       if (editingEmployee) {
@@ -216,10 +225,11 @@ export function EmployeesPage() {
                 <Typography.Text strong ellipsis style={{ display: 'block' }}>
                   {getFullName(employee)}
                 </Typography.Text>
-                <Space direction="vertical" size={0} style={{ width: '100%', marginTop: 2 }}>
-                  <MetaLine label="Проекты" values={employee.projects} />
-                  <MetaLine label="РП" values={employee.projectManagers} />
-                </Space>
+                <div style={{ marginTop: 2 }}>
+                  <ProjectAssignmentsMeta
+                    assignments={employee.projectAssignments}
+                  />
+                </div>
               </div>
               {isMobile && (
                 <RightOutlined
@@ -245,7 +255,7 @@ export function EmployeesPage() {
         cancelText="Отмена"
         destroyOnHidden
         centered
-        width={isMobile ? 'calc(100vw - 32px)' : 520}
+        width={isMobile ? 'calc(100vw - 32px)' : 680}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 8 }}>
           <Form.Item
@@ -262,26 +272,71 @@ export function EmployeesPage() {
           >
             <Input placeholder="Иван" size={isMobile ? 'large' : 'middle'} />
           </Form.Item>
-          <Form.Item name="projects" label="Проекты">
-            <Select
-              mode="tags"
-              allowClear
-              placeholder="Введите проект и нажмите Enter"
-              tokenSeparators={[',']}
-              size={isMobile ? 'large' : 'middle'}
-              open={false}
-            />
-          </Form.Item>
-          <Form.Item name="projectManagers" label="Руководители проектов">
-            <Select
-              mode="tags"
-              allowClear
-              placeholder="Введите РП и нажмите Enter"
-              tokenSeparators={[',']}
-              size={isMobile ? 'large' : 'middle'}
-              open={false}
-            />
-          </Form.Item>
+          <Form.List name="projectAssignments">
+            {(fields, { add, remove }) => (
+              <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                {fields.map((field) => (
+                  <div
+                    key={field.key}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: isMobile
+                        ? '1fr'
+                        : 'minmax(0, 1fr) minmax(0, 1fr) auto',
+                      gap: isMobile ? 0 : 12,
+                      padding: 12,
+                      borderRadius: token.borderRadiusLG,
+                      border: `1px solid ${token.colorBorderSecondary}`,
+                    }}
+                  >
+                    <Form.Item
+                      name={[field.name, 'project']}
+                      label="Проект"
+                      rules={[{ required: true, message: 'Введите проект' }]}
+                      style={{ marginBottom: isMobile ? 12 : 0 }}
+                    >
+                      <Input
+                        placeholder="Название проекта"
+                        size={isMobile ? 'large' : 'middle'}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name={[field.name, 'projectManager']}
+                      label="Руководитель проекта"
+                      rules={[{ required: true, message: 'Введите РП' }]}
+                      style={{ marginBottom: isMobile ? 12 : 0 }}
+                    >
+                      <Input
+                        placeholder="Имя руководителя"
+                        size={isMobile ? 'large' : 'middle'}
+                      />
+                    </Form.Item>
+                    <Button
+                      type="text"
+                      danger
+                      icon={<MinusCircleOutlined />}
+                      onClick={() => remove(field.name)}
+                      aria-label="Удалить проект"
+                      block={isMobile}
+                      style={isMobile ? undefined : { marginTop: 30 }}
+                    >
+                      {isMobile && 'Удалить проект'}
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() =>
+                    add({ project: '', projectManager: '' })
+                  }
+                  block
+                >
+                  Добавить проект и РП
+                </Button>
+              </Space>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </div>

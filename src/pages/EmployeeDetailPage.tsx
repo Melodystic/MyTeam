@@ -97,18 +97,21 @@ export function EmployeeDetailPage() {
         >
           {fullName}
         </Typography.Title>
-        {(employee.projects.length > 0 || employee.projectManagers.length > 0) && (
+        {employee.projectAssignments.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {employee.projects.length > 0 && (
-              <Typography.Text type="secondary" style={{ fontSize: isMobile ? 13 : 14 }}>
-                Проекты: {employee.projects.join(', ')}
+            {employee.projectAssignments.map((assignment, index) => (
+              <Typography.Text
+                key={`${assignment.project}-${assignment.projectManager}-${index}`}
+                type="secondary"
+                style={{ fontSize: isMobile ? 13 : 14 }}
+              >
+                <Typography.Text strong>
+                  {assignment.project || 'Проект не указан'}
+                </Typography.Text>
+                {' · РП: '}
+                {assignment.projectManager || 'не указан'}
               </Typography.Text>
-            )}
-            {employee.projectManagers.length > 0 && (
-              <Typography.Text type="secondary" style={{ fontSize: isMobile ? 13 : 14 }}>
-                РП: {employee.projectManagers.join(', ')}
-              </Typography.Text>
-            )}
+            ))}
           </div>
         )}
       </div>

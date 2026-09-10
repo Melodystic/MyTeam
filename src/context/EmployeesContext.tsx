@@ -20,7 +20,7 @@ import {
   METRIC_MAX,
   NEED_MAX,
   normalizeEmployee,
-  normalizeStringList,
+  normalizeProjectAssignments,
   type Employee,
   type EmployeeMetric,
   type EmployeeProfileInput,
@@ -133,8 +133,9 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
         ...employee,
         firstName: profile.firstName.trim(),
         lastName: profile.lastName.trim(),
-        projects: normalizeStringList(profile.projects),
-        projectManagers: normalizeStringList(profile.projectManagers),
+        projectAssignments: normalizeProjectAssignments(
+          profile.projectAssignments,
+        ),
       }));
     },
     [updateEmployee],
