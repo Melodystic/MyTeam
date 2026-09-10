@@ -635,6 +635,15 @@ export interface SavedNote {
   updatedAt: number;
 }
 
+export interface OneToOneMeetingNote {
+  id: string;
+  meetingDate: number;
+  prep: string;
+  after: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface OneToOneQuestion {
   id: string;
   text: string;
@@ -661,7 +670,7 @@ export interface Employee {
   oneToOnePrep: string;
   oneToOneAfter: string;
   oneToOneQuestions: OneToOneQuestion[];
-  oneToOneNotes: SavedNote[];
+  oneToOneNotes: OneToOneMeetingNote[];
   delegationNotes: SavedNote[];
   feedbackType: FeedbackType;
   feedbackNotes: string;
@@ -734,6 +743,58 @@ export function normalizeSavedNotes(value: unknown): SavedNote[] {
   }
 
   return [];
+}
+
+export function normalizeOneToOneNotes(value: unknown): OneToOneMeetingNote[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((rawNote) => {
+    if (!rawNote || typeof rawNote !== 'object') return [];
+
+    const note = rawNote as Record<string, unknown>;
+    if (
+      typeof note.id !== 'string' ||
+      typeof note.createdAt !== 'number'
+    ) {
+      return [];
+    }
+
+    const updatedAt =
+      typeof note.updatedAt === 'number' ? note.updatedAt : note.createdAt;
+
+    if (
+      typeof note.meetingDate === 'number' &&
+      typeof note.prep === 'string' &&
+      typeof note.after === 'string'
+    ) {
+      return [
+        {
+          id: note.id,
+          meetingDate: note.meetingDate,
+          prep: note.prep,
+          after: note.after,
+          createdAt: note.createdAt,
+          updatedAt,
+        },
+      ];
+    }
+
+    // Старые one-to-one заметки были обычным текстом без отдельной даты встречи.
+    if (typeof note.text === 'string') {
+      return [
+        {
+          id: note.id,
+          meetingDate: note.createdAt,
+          prep: '',
+          after: note.text,
+          createdAt: note.createdAt,
+          updatedAt,
+        },
+      ];
+    }
+
+    return [];
+  });
 }
 
 export function normalizeOneToOneQuestions(value: unknown): OneToOneQuestion[] {
@@ -845,7 +906,7 @@ export function normalizeEmployee(employee: Employee): Employee {
     oneToOneAfter:
       typeof employee.oneToOneAfter === 'string' ? employee.oneToOneAfter : '',
     oneToOneQuestions: normalizeOneToOneQuestions(employee.oneToOneQuestions),
-    oneToOneNotes: normalizeSavedNotes(employee.oneToOneNotes),
+    oneToOneNotes: normalizeOneToOneNotes(employee.oneToOneNotes),
     delegationNotes: normalizeSavedNotes(employee.delegationNotes),
     feedbackType: employee.feedbackType ?? null,
     feedbackNotes: employee.feedbackNotes ?? '',

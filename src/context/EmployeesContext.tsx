@@ -28,6 +28,7 @@ import {
   type LeadershipStyle,
   type NeedKey,
   type NeedMark,
+  type OneToOneMeetingNote,
 } from '../types/employee';
 
 interface EmployeesContextValue {
@@ -51,8 +52,17 @@ interface EmployeesContextValue {
   updateOneToOneQuestion: (id: string, questionId: string, text: string) => void;
   updateOneToOneQuestionAnswer: (id: string, questionId: string, answer: string) => void;
   removeOneToOneQuestion: (id: string, questionId: string) => void;
-  addOneToOneNote: (id: string, text: string) => void;
-  updateOneToOneNote: (id: string, noteId: string, text: string) => void;
+  saveOneToOneMeeting: (
+    id: string,
+    meetingDate: number,
+    prep: string,
+    after: string,
+  ) => void;
+  updateOneToOneNote: (
+    id: string,
+    noteId: string,
+    note: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
+  ) => void;
   addDelegationNote: (id: string, text: string) => void;
   updateDelegationNote: (id: string, noteId: string, text: string) => void;
   updateFeedbackType: (id: string, type: FeedbackType) => void;
@@ -314,15 +324,23 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     [updateEmployee],
   );
 
-  const addOneToOneNote = useCallback(
-    (id: string, text: string) => {
+  const saveOneToOneMeeting = useCallback(
+    (id: string, meetingDate: number, prep: string, after: string) => {
+      const trimmedPrep = prep.trim();
+      const trimmedAfter = after.trim();
+      if (!trimmedPrep && !trimmedAfter) return;
+
       const now = Date.now();
       updateEmployee(id, (employee) => ({
         ...employee,
+        oneToOnePrep: '',
+        oneToOneAfter: '',
         oneToOneNotes: [
           {
             id: crypto.randomUUID(),
-            text,
+            meetingDate,
+            prep: trimmedPrep,
+            after: trimmedAfter,
             createdAt: now,
             updatedAt: now,
           },
@@ -334,12 +352,26 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
   );
 
   const updateOneToOneNote = useCallback(
-    (id: string, noteId: string, text: string) => {
+    (
+      id: string,
+      noteId: string,
+      updates: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
+    ) => {
+      const prep = updates.prep.trim();
+      const after = updates.after.trim();
+      if (!prep && !after) return;
+
       updateEmployee(id, (employee) => ({
         ...employee,
         oneToOneNotes: employee.oneToOneNotes.map((note) =>
           note.id === noteId
-            ? { ...note, text, updatedAt: Date.now() }
+            ? {
+                ...note,
+                meetingDate: updates.meetingDate,
+                prep,
+                after,
+                updatedAt: Date.now(),
+              }
             : note,
         ),
       }));
@@ -467,7 +499,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateOneToOneQuestion,
       updateOneToOneQuestionAnswer,
       removeOneToOneQuestion,
-      addOneToOneNote,
+      saveOneToOneMeeting,
       updateOneToOneNote,
       addDelegationNote,
       updateDelegationNote,
@@ -497,7 +529,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateOneToOneQuestion,
       updateOneToOneQuestionAnswer,
       removeOneToOneQuestion,
-      addOneToOneNote,
+      saveOneToOneMeeting,
       updateOneToOneNote,
       addDelegationNote,
       updateDelegationNote,

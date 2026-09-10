@@ -1,29 +1,47 @@
 import { useState, type CSSProperties, type FormEvent } from 'react';
-import { Button, Collapse, Empty, Input, Space, Table, Typography, theme } from 'antd';
+import {
+  Button,
+  Collapse,
+  DatePicker,
+  Empty,
+  Input,
+  Space,
+  Table,
+  Typography,
+  theme,
+} from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import dayjs, { type Dayjs } from 'dayjs';
 import {
   ONE_TO_ONE_AGENDA,
   ONE_TO_ONE_FREQUENCY,
   ONE_TO_ONE_GOAL,
+  type OneToOneMeetingNote,
   type OneToOneQuestion,
-  type SavedNote,
 } from '../types/employee';
-import { SavedNotesBlock } from './SavedNotesBlock';
+import { OneToOneNotesArchive } from './OneToOneNotesArchive';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
 interface OneToOneBlockProps {
   prep: string;
   after: string;
   questions: OneToOneQuestion[];
-  notes: SavedNote[];
+  notes: OneToOneMeetingNote[];
   onChangePrep: (prep: string) => void;
   onChangeAfter: (notes: string) => void;
   onAddQuestion: (text: string) => void;
   onUpdateQuestion: (questionId: string, text: string) => void;
   onChangeAnswer: (questionId: string, answer: string) => void;
   onRemoveQuestion: (questionId: string) => void;
-  onAddNote: (text: string) => void;
-  onUpdateNote: (noteId: string, text: string) => void;
+  onSaveMeeting: (
+    meetingDate: number,
+    prep: string,
+    after: string,
+  ) => void;
+  onUpdateNote: (
+    noteId: string,
+    note: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
+  ) => void;
 }
 
 export function OneToOneBlock({
@@ -37,7 +55,7 @@ export function OneToOneBlock({
   onUpdateQuestion,
   onChangeAnswer,
   onRemoveQuestion,
-  onAddNote,
+  onSaveMeeting,
   onUpdateNote,
 }: OneToOneBlockProps) {
   const { token } = theme.useToken();
@@ -45,6 +63,7 @@ export function OneToOneBlock({
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [meetingDate, setMeetingDate] = useState<Dayjs>(dayjs());
 
   const panelStyle: CSSProperties = {
     padding: isMobile ? 12 : 16,
@@ -81,6 +100,12 @@ export function OneToOneBlock({
   const cancelEdit = () => {
     setEditingId(null);
     setEditingText('');
+  };
+
+  const saveMeeting = () => {
+    if (!prep.trim() && !after.trim()) return;
+    onSaveMeeting(meetingDate.startOf('day').valueOf(), prep, after);
+    setMeetingDate(dayjs());
   };
 
   return (
@@ -190,6 +215,44 @@ export function OneToOneBlock({
           />
         </div>
       </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'flex-end',
+          gap: 12,
+        }}
+      >
+        <div>
+          <Typography.Text
+            type="secondary"
+            style={{ display: 'block', marginBottom: 6 }}
+          >
+            Дата встречи
+          </Typography.Text>
+          <DatePicker
+            value={meetingDate}
+            onChange={(date) => date && setMeetingDate(date)}
+            format="DD.MM.YYYY"
+            allowClear={false}
+            style={{ width: isMobile ? '100%' : 180 }}
+            aria-label="Дата встречи"
+          />
+        </div>
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          onClick={saveMeeting}
+          disabled={!prep.trim() && !after.trim()}
+          block={isMobile}
+          size={isMobile ? 'large' : 'middle'}
+        >
+          Сохранить встречу
+        </Button>
+      </div>
+
+      <OneToOneNotesArchive notes={notes} onUpdate={onUpdateNote} />
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
@@ -323,14 +386,6 @@ export function OneToOneBlock({
         )}
       </div>
 
-      {notes.length > 0 && (
-        <SavedNotesBlock
-          notes={notes}
-          hideComposer
-          onAdd={onAddNote}
-          onUpdate={onUpdateNote}
-        />
-      )}
     </div>
   );
 }

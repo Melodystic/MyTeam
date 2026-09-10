@@ -31,7 +31,7 @@ export function EmployeeDetailPage() {
     updateOneToOneQuestion,
     updateOneToOneQuestionAnswer,
     removeOneToOneQuestion,
-    addOneToOneNote,
+    saveOneToOneMeeting,
     updateOneToOneNote,
     addDelegationNote,
     updateDelegationNote,
@@ -195,9 +195,11 @@ export function EmployeeDetailPage() {
                   onRemoveQuestion={(questionId) =>
                     removeOneToOneQuestion(employee.id, questionId)
                   }
-                  onAddNote={(text) => addOneToOneNote(employee.id, text)}
-                  onUpdateNote={(noteId, text) =>
-                    updateOneToOneNote(employee.id, noteId, text)
+                  onSaveMeeting={(meetingDate, prep, after) =>
+                    saveOneToOneMeeting(employee.id, meetingDate, prep, after)
+                  }
+                  onUpdateNote={(noteId, note) =>
+                    updateOneToOneNote(employee.id, noteId, note)
                   }
                 />
               ),
