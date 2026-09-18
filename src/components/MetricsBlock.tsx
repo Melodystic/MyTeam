@@ -19,12 +19,12 @@ import {
   createCustomMetric,
   createMetricFromPreset,
   METRIC_MAX,
-  METRIC_PRESETS,
   type Employee,
   type EmployeeMetric,
 } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { RadarChart } from './RadarChart';
+import { useLocale } from '../context/LocaleContext';
 
 interface MetricsBlockProps {
   employee: Employee;
@@ -43,6 +43,7 @@ export function MetricsBlock({
 }: MetricsBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { domain, t } = useLocale();
   const [presetKeys, setPresetKeys] = useState<string[]>([]);
   const [customName, setCustomName] = useState('');
 
@@ -56,12 +57,17 @@ export function MetricsBlock({
     [employee.metrics],
   );
 
-  const availablePresets = METRIC_PRESETS.filter((p) => !usedPresetKeys.has(p.key));
+  const metricPresets = domain.METRIC_PRESETS;
+  const availablePresets = metricPresets.filter(
+    (preset) => !usedPresetKeys.has(preset.key),
+  );
 
   const handleAddPresets = () => {
     if (presetKeys.length === 0) return;
     onAddMetrics(
-      METRIC_PRESETS.filter((p) => presetKeys.includes(p.key)).map(createMetricFromPreset),
+      metricPresets
+        .filter((preset) => presetKeys.includes(preset.key))
+        .map(createMetricFromPreset),
     );
     setPresetKeys([]);
   };
@@ -76,18 +82,18 @@ export function MetricsBlock({
   return (
     <div>
       <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-        Оцените сотрудника по шкале 0–{METRIC_MAX}. Добавьте метрики из базового набора
-        или создайте свои. Рекомендуется держать фокус на 3–5 метриках — так проще
-        читать радар и принимать решения. Для радара нужно минимум 3 оси.
+        {t('metrics.intro', { max: METRIC_MAX })}
       </Typography.Text>
 
       {employee.metrics.length >= 3 ? (
         <RadarChart
-          ariaLabel="Радар метрик сотрудника"
+          ariaLabel={t('metrics.radarAria')}
           maxValue={METRIC_MAX}
           axes={employee.metrics.map((metric) => ({
             key: metric.id,
-            label: metric.shortName,
+            label:
+              metricPresets.find((preset) => preset.key === metric.presetKey)
+                ?.shortName ?? metric.shortName,
             value: metric.value,
             valueLabel: String(metric.value),
           }))}
@@ -97,8 +103,10 @@ export function MetricsBlock({
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
             employee.metrics.length === 0
-              ? 'Пока нет метрик — добавьте из набора ниже'
-              : `Добавьте ещё ${3 - employee.metrics.length}, чтобы появился радар`
+              ? t('metrics.empty')
+              : t('metrics.addForRadar', {
+                  count: 3 - employee.metrics.length,
+                })
           }
           style={{ margin: '12px 0 24px' }}
         />
@@ -115,7 +123,7 @@ export function MetricsBlock({
           background: token.colorFillAlter,
         }}
       >
-        <Typography.Text strong>Добавить метрики</Typography.Text>
+        <Typography.Text strong>{t('metrics.addTitle')}</Typography.Text>
 
         <div
           style={{
@@ -128,7 +136,7 @@ export function MetricsBlock({
           <Select
             mode="multiple"
             allowClear
-            placeholder="Базовый набор метрик"
+            placeholder={t('metrics.presetsPlaceholder')}
             style={{ flex: 1, minWidth: 0 }}
             size={isMobile ? 'large' : 'middle'}
             value={presetKeys}
@@ -138,7 +146,9 @@ export function MetricsBlock({
               label: p.name,
             }))}
             optionRender={(option) => {
-              const preset = METRIC_PRESETS.find((p) => p.key === option.value);
+              const preset = metricPresets.find(
+                (item) => item.key === option.value,
+              );
               return (
                 <div>
                   <div>{option.label}</div>
@@ -159,7 +169,7 @@ export function MetricsBlock({
             onClick={handleAddPresets}
             size={isMobile ? 'large' : 'middle'}
           >
-            Добавить
+            {t('common.add')}
           </Button>
         </div>
 
@@ -172,7 +182,7 @@ export function MetricsBlock({
           }}
         >
           <Input
-            placeholder="Своя метрика"
+            placeholder={t('metrics.customPlaceholder')}
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             onPressEnter={handleAddCustom}
@@ -185,14 +195,17 @@ export function MetricsBlock({
             onClick={handleAddCustom}
             size={isMobile ? 'large' : 'middle'}
           >
-            Создать
+            {t('common.create')}
           </Button>
         </div>
       </div>
 
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
         {employee.metrics.map((metric) => {
-          const preset = METRIC_PRESETS.find((p) => p.key === metric.presetKey);
+          const preset = metricPresets.find(
+            (item) => item.key === metric.presetKey,
+          );
+          const metricName = preset?.name ?? metric.name;
           const canIncrease = metric.value < METRIC_MAX;
           const canDecrease = metric.value > 0;
 
@@ -226,7 +239,7 @@ export function MetricsBlock({
                   }}
                 >
                   <Typography.Text style={{ flex: 1, minWidth: 0 }}>
-                    {metric.name}
+                    {metricName}
                   </Typography.Text>
                   {preset ? (
                     <Tooltip
@@ -248,7 +261,9 @@ export function MetricsBlock({
                     danger
                     icon={<DeleteOutlined />}
                     onClick={() => onRemoveMetric(metric.id)}
-                    aria-label={`Удалить ${metric.name}`}
+                    aria-label={t('metrics.deleteAria', {
+                      name: metricName,
+                    })}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                 </div>
@@ -259,7 +274,9 @@ export function MetricsBlock({
                     icon={<MinusOutlined />}
                     disabled={!canDecrease}
                     onClick={() => onChangeValue(metric.id, -1)}
-                    aria-label={`Уменьшить ${metric.name}`}
+                    aria-label={t('metrics.decreaseAria', {
+                      name: metricName,
+                    })}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                   <Typography.Text
@@ -273,7 +290,9 @@ export function MetricsBlock({
                     icon={<PlusOutlined />}
                     disabled={!canIncrease}
                     onClick={() => onChangeValue(metric.id, 1)}
-                    aria-label={`Увеличить ${metric.name}`}
+                    aria-label={t('metrics.increaseAria', {
+                      name: metricName,
+                    })}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                 </Space>
@@ -281,7 +300,7 @@ export function MetricsBlock({
 
               <Input.TextArea
                 rows={2}
-                placeholder="Комментарий к метрике..."
+                placeholder={t('metrics.commentPlaceholder')}
                 value={metric.comment}
                 onChange={(e) => onChangeComment(metric.id, e.target.value)}
               />

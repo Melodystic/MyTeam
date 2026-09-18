@@ -2,15 +2,14 @@ import { Button, Input, Space, Tooltip, Typography, theme } from 'antd';
 import { InfoCircleOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   NEED_KEYS,
-  NEED_LABELS,
   NEED_MAX,
-  NEED_TOOLTIPS,
   type Employee,
   type NeedKey,
   type NeedMark,
 } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { NeedsRadarChart } from './NeedsRadarChart';
+import { useLocale } from '../context/LocaleContext';
 
 interface NeedsBlockProps {
   employee: Employee;
@@ -19,16 +18,14 @@ interface NeedsBlockProps {
   onChangeComment: (need: NeedKey, comment: string) => void;
 }
 
-const MARK_META: Record<NeedMark, { color: string; label: string; tip: string }> = {
+const MARK_META: Record<NeedMark, { color: string; label: string }> = {
   K: {
     color: '#52c41a',
     label: 'К',
-    tip: 'Зелёный — потребность К',
   },
   OT: {
     color: '#ff4d4f',
     label: 'ОТ',
-    tip: 'Красный — потребность ОТ',
   },
 };
 
@@ -40,11 +37,12 @@ export function NeedsBlock({
 }: NeedsBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { domain, t } = useLocale();
 
   return (
     <div>
       <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-        Оцените каждую потребность по шкале 0–{NEED_MAX}
+        {t('needs.scale', { max: NEED_MAX })}
       </Typography.Text>
 
       <NeedsRadarChart needs={employee.needs} />
@@ -53,6 +51,8 @@ export function NeedsBlock({
         {NEED_KEYS.map((key) => {
           const need = employee.needs[key];
           const mark = MARK_META[need.mark];
+          const markTip =
+            need.mark === 'K' ? t('needs.greenTip') : t('needs.redTip');
           const canIncrease = need.score < NEED_MAX;
           const canDecrease = need.score > 0;
 
@@ -84,11 +84,13 @@ export function NeedsBlock({
                     width: isMobile ? '100%' : undefined,
                   }}
                 >
-                  <Tooltip title={`${mark.tip}. Нажмите, чтобы переключить.`}>
+                  <Tooltip title={t('needs.toggleTip', { tip: markTip })}>
                     <button
                       type="button"
                       onClick={() => onChangeMark(key, need.mark === 'K' ? 'OT' : 'K')}
-                      aria-label={`Индикатор потребности: ${mark.label}`}
+                      aria-label={t('needs.indicatorAria', {
+                        mark: mark.label,
+                      })}
                       style={{
                         width: isMobile ? 36 : 28,
                         height: isMobile ? 36 : 28,
@@ -112,9 +114,12 @@ export function NeedsBlock({
                     </button>
                   </Tooltip>
                   <Typography.Text style={{ flex: 1, minWidth: 0 }}>
-                    {NEED_LABELS[key]}
+                    {domain.NEED_LABELS[key]}
                   </Typography.Text>
-                  <Tooltip title={NEED_TOOLTIPS[key]} trigger={isMobile ? ['click'] : ['hover']}>
+                  <Tooltip
+                    title={domain.NEED_TOOLTIPS[key]}
+                    trigger={isMobile ? ['click'] : ['hover']}
+                  >
                     <InfoCircleOutlined
                       style={{
                         color: token.colorTextSecondary,
@@ -132,7 +137,9 @@ export function NeedsBlock({
                     icon={<MinusOutlined />}
                     disabled={!canDecrease}
                     onClick={() => onChangeScore(key, -1)}
-                    aria-label={`Уменьшить ${NEED_LABELS[key]}`}
+                    aria-label={t('needs.decreaseAria', {
+                      name: domain.NEED_LABELS[key],
+                    })}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                   <Typography.Text
@@ -146,7 +153,9 @@ export function NeedsBlock({
                     icon={<PlusOutlined />}
                     disabled={!canIncrease}
                     onClick={() => onChangeScore(key, 1)}
-                    aria-label={`Увеличить ${NEED_LABELS[key]}`}
+                    aria-label={t('needs.increaseAria', {
+                      name: domain.NEED_LABELS[key],
+                    })}
                     style={isMobile ? { width: 40, height: 40 } : undefined}
                   />
                 </Space>
@@ -154,7 +163,7 @@ export function NeedsBlock({
 
               <Input.TextArea
                 rows={2}
-                placeholder="Комментарий к потребности..."
+                placeholder={t('needs.commentPlaceholder')}
                 value={need.comment}
                 onChange={(e) => onChangeComment(key, e.target.value)}
               />

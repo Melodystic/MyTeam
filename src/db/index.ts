@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { Employee } from '../types/employee';
+import type { AppLocale } from '../i18n/ui';
 
 interface MyTeamDB extends DBSchema {
   employees: {
@@ -71,6 +72,17 @@ export async function getThemeSetting(): Promise<'light' | 'dark'> {
 export async function saveThemeSetting(theme: 'light' | 'dark'): Promise<void> {
   const db = await getDB();
   await db.put('settings', { key: 'theme', value: theme });
+}
+
+export async function getLocaleSetting(): Promise<AppLocale> {
+  const db = await getDB();
+  const row = await db.get('settings', 'locale');
+  return row?.value === 'en' ? 'en' : 'ru';
+}
+
+export async function saveLocaleSetting(locale: AppLocale): Promise<void> {
+  const db = await getDB();
+  await db.put('settings', { key: 'locale', value: locale });
 }
 
 export async function exportBackup(): Promise<MyTeamBackup> {

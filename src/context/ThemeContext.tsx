@@ -9,7 +9,9 @@ import {
 } from 'react';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import ruRU from 'antd/locale/ru_RU';
+import enUS from 'antd/locale/en_US';
 import { getThemeSetting, saveThemeSetting } from '../db';
+import { useLocale } from './LocaleContext';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -21,6 +23,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const { locale } = useLocale();
   const [mode, setMode] = useState<ThemeMode>('light');
   const [ready, setReady] = useState(false);
 
@@ -48,7 +51,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeContext.Provider value={value}>
       <ConfigProvider
-        locale={ruRU}
+        locale={locale === 'ru' ? ruRU : enUS}
         theme={{
           algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
           token: {

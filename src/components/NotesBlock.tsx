@@ -1,4 +1,5 @@
 import { Input } from 'antd';
+import { useLocale } from '../context/LocaleContext';
 
 interface NotesBlockProps {
   value: string;
@@ -9,12 +10,14 @@ interface NotesBlockProps {
 export function NotesBlock({
   value,
   onChange,
-  placeholder = 'Запишите итоги и договорённости после one-to-one...',
+  placeholder,
 }: NotesBlockProps) {
+  const { t } = useLocale();
+
   return (
     <Input.TextArea
       rows={6}
-      placeholder={placeholder}
+      placeholder={placeholder ?? t('notes.oneToOnePlaceholder')}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />

@@ -28,6 +28,7 @@ import {
   type ProjectAssignment,
 } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface EmployeeFormValues {
   firstName: string;
@@ -40,6 +41,7 @@ function ProjectAssignmentsMeta({
 }: {
   assignments: ProjectAssignment[];
 }) {
+  const { t } = useLocale();
   if (assignments.length === 0) return null;
 
   return (
@@ -50,9 +52,11 @@ function ProjectAssignmentsMeta({
           type="secondary"
           style={{ fontSize: 13, display: 'block' }}
         >
-          <Typography.Text strong>{assignment.project || 'Проект не указан'}</Typography.Text>
-          {' · РП: '}
-          {assignment.projectManager || 'не указан'}
+          <Typography.Text strong>
+            {assignment.project || t('employees.projectMissing')}
+          </Typography.Text>
+          {t('employees.managerPrefix')}
+          {assignment.projectManager || t('employees.notSpecified')}
         </Typography.Text>
       ))}
     </Space>
@@ -67,6 +71,7 @@ export function EmployeesPage() {
   const [form] = Form.useForm<EmployeeFormValues>();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { locale, t } = useLocale();
 
   const openCreate = () => {
     setEditingEmployee(null);
@@ -101,10 +106,10 @@ export function EmployeesPage() {
 
       if (editingEmployee) {
         updateEmployeeProfile(editingEmployee.id, profile);
-        message.success('Сотрудник обновлён');
+        message.success(t('employees.updated'));
       } else {
         await addEmployee(profile);
-        message.success('Сотрудник добавлен');
+        message.success(t('employees.created'));
       }
       closeModal();
     } catch {
@@ -127,10 +132,10 @@ export function EmployeesPage() {
       >
         <div>
           <Typography.Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
-            Команда
+            {t('employees.title')}
           </Typography.Title>
           <Typography.Text type="secondary">
-            Список сотрудников для ведения one-to-one
+            {t('employees.subtitle')}
           </Typography.Text>
         </div>
         <Button
@@ -140,7 +145,7 @@ export function EmployeesPage() {
           block={isMobile}
           size={isMobile ? 'large' : 'middle'}
         >
-          Добавить сотрудника
+          {t('employees.add')}
         </Button>
       </div>
 
@@ -152,12 +157,15 @@ export function EmployeesPage() {
           emptyText: (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Пока нет сотрудников. Добавьте первого."
+              description={t('employees.empty')}
             />
           ),
         }}
         dataSource={[...employees].sort((a, b) =>
-          getFullName(a).localeCompare(getFullName(b), 'ru'),
+          getFullName(a).localeCompare(
+            getFullName(b),
+            locale === 'ru' ? 'ru' : 'en',
+          ),
         )}
         renderItem={(employee) => (
           <List.Item
@@ -170,7 +178,7 @@ export function EmployeesPage() {
                 key="edit"
                 type="text"
                 icon={<EditOutlined />}
-                aria-label="Редактировать сотрудника"
+                aria-label={t('employees.editAria')}
                 style={isMobile ? { width: 40, height: 40 } : undefined}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -179,21 +187,23 @@ export function EmployeesPage() {
               />,
               <Popconfirm
                 key="delete"
-                title="Удалить сотрудника?"
-                description={`«${getFullName(employee)}» будет удалён безвозвратно.`}
-                okText="Удалить"
-                cancelText="Отмена"
+                title={t('employees.deleteTitle')}
+                description={t('employees.deleteDescription', {
+                  name: getFullName(employee),
+                })}
+                okText={t('common.delete')}
+                cancelText={t('common.cancel')}
                 okButtonProps={{ danger: true }}
                 onConfirm={async () => {
                   await removeEmployee(employee.id);
-                  message.success('Сотрудник удалён');
+                  message.success(t('employees.deleted'));
                 }}
               >
                 <Button
                   danger
                   type="text"
                   icon={<DeleteOutlined />}
-                  aria-label="Удалить сотрудника"
+                  aria-label={t('employees.deleteAria')}
                   style={isMobile ? { width: 40, height: 40 } : undefined}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -247,12 +257,18 @@ export function EmployeesPage() {
       />
 
       <Modal
-        title={editingEmployee ? 'Редактировать сотрудника' : 'Новый сотрудник'}
+        title={
+          editingEmployee
+            ? t('employees.editTitle')
+            : t('employees.newTitle')
+        }
         open={open}
         onCancel={closeModal}
         onOk={() => void handleSubmit()}
-        okText={editingEmployee ? 'Сохранить' : 'Добавить'}
-        cancelText="Отмена"
+        okText={
+          editingEmployee ? t('common.save') : t('common.add')
+        }
+        cancelText={t('common.cancel')}
         destroyOnHidden
         centered
         width={isMobile ? 'calc(100vw - 32px)' : 680}
@@ -260,17 +276,28 @@ export function EmployeesPage() {
         <Form form={form} layout="vertical" style={{ marginTop: 8 }}>
           <Form.Item
             name="lastName"
-            label="Фамилия"
-            rules={[{ required: true, message: 'Введите фамилию' }]}
+            label={t('employees.lastName')}
+            rules={[
+              { required: true, message: t('employees.lastNameRequired') },
+            ]}
           >
-            <Input placeholder="Иванов" size={isMobile ? 'large' : 'middle'} autoFocus />
+            <Input
+              placeholder={t('employees.lastNamePlaceholder')}
+              size={isMobile ? 'large' : 'middle'}
+              autoFocus
+            />
           </Form.Item>
           <Form.Item
             name="firstName"
-            label="Имя"
-            rules={[{ required: true, message: 'Введите имя' }]}
+            label={t('employees.firstName')}
+            rules={[
+              { required: true, message: t('employees.firstNameRequired') },
+            ]}
           >
-            <Input placeholder="Иван" size={isMobile ? 'large' : 'middle'} />
+            <Input
+              placeholder={t('employees.firstNamePlaceholder')}
+              size={isMobile ? 'large' : 'middle'}
+            />
           </Form.Item>
           <Form.List name="projectAssignments">
             {(fields, { add, remove }) => (
@@ -291,23 +318,27 @@ export function EmployeesPage() {
                   >
                     <Form.Item
                       name={[field.name, 'project']}
-                      label="Проект"
-                      rules={[{ required: true, message: 'Введите проект' }]}
+                      label={t('employees.project')}
+                      rules={[
+                        { required: true, message: t('employees.projectRequired') },
+                      ]}
                       style={{ marginBottom: isMobile ? 12 : 0 }}
                     >
                       <Input
-                        placeholder="Название проекта"
+                        placeholder={t('employees.projectPlaceholder')}
                         size={isMobile ? 'large' : 'middle'}
                       />
                     </Form.Item>
                     <Form.Item
                       name={[field.name, 'projectManager']}
-                      label="Руководитель проекта"
-                      rules={[{ required: true, message: 'Введите РП' }]}
+                      label={t('employees.projectManager')}
+                      rules={[
+                        { required: true, message: t('employees.managerRequired') },
+                      ]}
                       style={{ marginBottom: isMobile ? 12 : 0 }}
                     >
                       <Input
-                        placeholder="Имя руководителя"
+                        placeholder={t('employees.managerPlaceholder')}
                         size={isMobile ? 'large' : 'middle'}
                       />
                     </Form.Item>
@@ -316,11 +347,11 @@ export function EmployeesPage() {
                       danger
                       icon={<MinusCircleOutlined />}
                       onClick={() => remove(field.name)}
-                      aria-label="Удалить проект"
+                      aria-label={t('employees.removeProject')}
                       block={isMobile}
                       style={isMobile ? undefined : { marginTop: 30 }}
                     >
-                      {isMobile && 'Удалить проект'}
+                      {isMobile && t('employees.removeProject')}
                     </Button>
                   </div>
                 ))}
@@ -332,7 +363,7 @@ export function EmployeesPage() {
                   }
                   block
                 >
-                  Добавить проект и РП
+                  {t('employees.addProject')}
                 </Button>
               </Space>
             )}

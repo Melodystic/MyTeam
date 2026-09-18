@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button, Empty, Input, List, Space, Typography, theme } from 'antd';
 import { EditOutlined, SaveOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import type { SavedNote } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface SavedNotesBlockProps {
   notes: SavedNote[];
@@ -13,19 +13,16 @@ interface SavedNotesBlockProps {
   onUpdate: (noteId: string, text: string) => void;
 }
 
-function formatNoteDate(timestamp: number): string {
-  return dayjs(timestamp).format('DD.MM.YYYY HH:mm');
-}
-
 export function SavedNotesBlock({
   notes,
-  placeholder = 'Введите заметку...',
+  placeholder,
   hideComposer = false,
   onAdd,
   onUpdate,
 }: SavedNotesBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { formatDate, t } = useLocale();
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -64,7 +61,7 @@ export function SavedNotesBlock({
         <div>
           <Input.TextArea
             rows={isMobile ? 4 : 5}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t('notes.defaultPlaceholder')}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
@@ -77,20 +74,20 @@ export function SavedNotesBlock({
             size={isMobile ? 'large' : 'middle'}
             style={{ marginTop: 12 }}
           >
-            Сохранить заметку
+            {t('notes.save')}
           </Button>
         </div>
       )}
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Сохранённые заметки
+          {t('notes.savedTitle')}
         </Typography.Title>
 
         {sortedNotes.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="Пока нет сохранённых заметок"
+            description={t('notes.empty')}
           />
         ) : (
           <List
@@ -120,20 +117,22 @@ export function SavedNotesBlock({
                     }}
                   >
                     <Typography.Text type="secondary" style={{ fontSize: isMobile ? 12 : undefined }}>
-                      {formatNoteDate(note.createdAt)}
+                      {formatDate(note.createdAt, true)}
                       {note.updatedAt !== note.createdAt &&
-                        ` · изменено ${formatNoteDate(note.updatedAt)}`}
+                        t('notes.updated', {
+                          date: formatDate(note.updatedAt, true),
+                        })}
                     </Typography.Text>
                     {!isEditing && (
                       <Button
                         type="text"
                         icon={<EditOutlined />}
                         onClick={() => startEdit(note)}
-                        aria-label="Редактировать заметку"
+                        aria-label={t('notes.editAria')}
                         size={isMobile ? 'middle' : 'small'}
                         style={isMobile ? { paddingInline: 0 } : undefined}
                       >
-                        Редактировать
+                        {t('common.edit')}
                       </Button>
                     )}
                   </div>
@@ -158,14 +157,14 @@ export function SavedNotesBlock({
                           block={isMobile}
                           size={isMobile ? 'large' : 'middle'}
                         >
-                          Сохранить
+                          {t('common.save')}
                         </Button>
                         <Button
                           onClick={cancelEdit}
                           block={isMobile}
                           size={isMobile ? 'large' : 'middle'}
                         >
-                          Отмена
+                          {t('common.cancel')}
                         </Button>
                       </Space>
                     </Space>

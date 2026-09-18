@@ -1,8 +1,9 @@
 import type { CSSProperties } from 'react';
 import { Space, Typography, theme } from 'antd';
-import { DELEGATION_DO, DELEGATION_DONT, type SavedNote } from '../types/employee';
+import { type SavedNote } from '../types/employee';
 import { SavedNotesBlock } from './SavedNotesBlock';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface DelegationBlockProps {
   notes: SavedNote[];
@@ -10,7 +11,13 @@ interface DelegationBlockProps {
   onUpdate: (noteId: string, text: string) => void;
 }
 
-function HelpList({ title, items }: { title: string; items: string[] }) {
+function HelpList({
+  title,
+  items,
+}: {
+  title: string;
+  items: readonly string[];
+}) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
 
@@ -40,12 +47,13 @@ function HelpList({ title, items }: { title: string; items: string[] }) {
 
 export function DelegationBlock({ notes, onAdd, onUpdate }: DelegationBlockProps) {
   const isMobile = useIsMobile();
+  const { domain, t } = useLocale();
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
       <SavedNotesBlock
         notes={notes}
-        placeholder="Заметки по делегированию..."
+        placeholder={t('delegation.placeholder')}
         onAdd={onAdd}
         onUpdate={onUpdate}
       />
@@ -58,8 +66,11 @@ export function DelegationBlock({ notes, onAdd, onUpdate }: DelegationBlockProps
           alignItems: 'stretch',
         }}
       >
-        <HelpList title="Что делегировать" items={DELEGATION_DO} />
-        <HelpList title="Что не делегировать" items={DELEGATION_DONT} />
+        <HelpList title={t('delegation.do')} items={domain.DELEGATION_DO} />
+        <HelpList
+          title={t('delegation.dont')}
+          items={domain.DELEGATION_DONT}
+        />
       </div>
     </Space>
   );

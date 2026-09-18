@@ -13,14 +13,12 @@ import {
 import { DeleteOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import {
-  ONE_TO_ONE_AGENDA,
-  ONE_TO_ONE_FREQUENCY,
-  ONE_TO_ONE_GOAL,
   type OneToOneMeetingNote,
   type OneToOneQuestion,
 } from '../types/employee';
 import { OneToOneNotesArchive } from './OneToOneNotesArchive';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface OneToOneBlockProps {
   prep: string;
@@ -60,6 +58,7 @@ export function OneToOneBlock({
 }: OneToOneBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { dateFormat, domain, t } = useLocale();
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -119,15 +118,17 @@ export function OneToOneBlock({
         }}
       >
         <Typography.Paragraph style={{ marginBottom: 8 }}>
-          <Typography.Text strong>Цель: </Typography.Text>
-          <Typography.Text type="secondary">{ONE_TO_ONE_GOAL}</Typography.Text>
+          <Typography.Text strong>{t('oneToOne.goal')}</Typography.Text>
+          <Typography.Text type="secondary">
+            {domain.ONE_TO_ONE_GOAL}
+          </Typography.Text>
         </Typography.Paragraph>
         <Typography.Paragraph style={{ marginBottom: 0 }}>
-          <Typography.Text strong>Частота: </Typography.Text>
+          <Typography.Text strong>{t('oneToOne.frequency')}</Typography.Text>
           <Typography.Text type="secondary">
-            {ONE_TO_ONE_FREQUENCY[0]}
+            {domain.ONE_TO_ONE_FREQUENCY[0]}
             <br />
-            → {ONE_TO_ONE_FREQUENCY[1]}
+            → {domain.ONE_TO_ONE_FREQUENCY[1]}
           </Typography.Text>
         </Typography.Paragraph>
       </div>
@@ -136,17 +137,17 @@ export function OneToOneBlock({
         items={[
           {
             key: 'agenda',
-            label: 'Структура встречи (~30 мин)',
+            label: t('oneToOne.agendaTitle'),
             children: (
               <Table
                 size="small"
                 pagination={false}
                 rowKey="stage"
                 scroll={isMobile ? { x: 720 } : undefined}
-                dataSource={ONE_TO_ONE_AGENDA}
+                dataSource={domain.ONE_TO_ONE_AGENDA}
                 columns={[
                   {
-                    title: 'Этап',
+                    title: t('oneToOne.stage'),
                     dataIndex: 'stage',
                     key: 'stage',
                     width: isMobile ? 120 : 160,
@@ -155,18 +156,18 @@ export function OneToOneBlock({
                     ),
                   },
                   {
-                    title: 'Время',
+                    title: t('oneToOne.time'),
                     dataIndex: 'time',
                     key: 'time',
                     width: 80,
                   },
                   {
-                    title: 'Что делает руководитель',
+                    title: t('oneToOne.managerAction'),
                     dataIndex: 'manager',
                     key: 'manager',
                   },
                   {
-                    title: 'Что делает сотрудник',
+                    title: t('oneToOne.employeeAction'),
                     dataIndex: 'employee',
                     key: 'employee',
                   },
@@ -187,13 +188,13 @@ export function OneToOneBlock({
       >
         <div style={panelStyle}>
           <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 4 }}>
-            Вопросы и подготовка
+            {t('oneToOne.prepTitle')}
           </Typography.Title>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-            Темы и что учесть до встречи
+            {t('oneToOne.prepHint')}
           </Typography.Text>
           <Input.TextArea
-            placeholder="Темы и что подготовить..."
+            placeholder={t('oneToOne.prepPlaceholder')}
             value={prep}
             onChange={(e) => onChangePrep(e.target.value)}
             style={{ minHeight: 150, height: 150, resize: 'vertical' }}
@@ -202,13 +203,13 @@ export function OneToOneBlock({
 
         <div style={panelStyle}>
           <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 4 }}>
-            Заметки после встречи
+            {t('oneToOne.afterTitle')}
           </Typography.Title>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-            Итоги и договорённости
+            {t('oneToOne.afterHint')}
           </Typography.Text>
           <Input.TextArea
-            placeholder="Итоги, договорённости и что зафиксировать..."
+            placeholder={t('oneToOne.afterPlaceholder')}
             value={after}
             onChange={(e) => onChangeAfter(e.target.value)}
             style={{ minHeight: 150, height: 150, resize: 'vertical' }}
@@ -229,15 +230,15 @@ export function OneToOneBlock({
             type="secondary"
             style={{ display: 'block', marginBottom: 6 }}
           >
-            Дата встречи
+            {t('oneToOne.meetingDate')}
           </Typography.Text>
           <DatePicker
             value={meetingDate}
             onChange={(date) => date && setMeetingDate(date)}
-            format="DD.MM.YYYY"
+            format={dateFormat}
             allowClear={false}
             style={{ width: isMobile ? '100%' : 180 }}
-            aria-label="Дата встречи"
+            aria-label={t('oneToOne.meetingDate')}
           />
         </div>
         <Button
@@ -248,7 +249,7 @@ export function OneToOneBlock({
           block={isMobile}
           size={isMobile ? 'large' : 'middle'}
         >
-          Сохранить встречу
+          {t('oneToOne.saveMeeting')}
         </Button>
       </div>
 
@@ -256,7 +257,7 @@ export function OneToOneBlock({
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Вопросы
+          {t('oneToOne.questions')}
         </Typography.Title>
 
         <form
@@ -271,9 +272,9 @@ export function OneToOneBlock({
           <Input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Добавить вопрос к встрече..."
+            placeholder={t('oneToOne.addQuestionPlaceholder')}
             size={isMobile ? 'large' : 'middle'}
-            aria-label="Текст вопроса"
+            aria-label={t('oneToOne.questionTextAria')}
           />
           <Button
             type="primary"
@@ -283,14 +284,14 @@ export function OneToOneBlock({
             block={isMobile}
             size={isMobile ? 'large' : 'middle'}
           >
-            Добавить вопрос
+            {t('oneToOne.addQuestion')}
           </Button>
         </form>
 
         {questions.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="Пока нет вопросов — добавьте первый"
+            description={t('oneToOne.noQuestions')}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -334,7 +335,7 @@ export function OneToOneBlock({
                             type="text"
                             icon={<EditOutlined />}
                             onClick={() => startEdit(question)}
-                            aria-label="Редактировать вопрос"
+                            aria-label={t('oneToOne.editQuestionAria')}
                             size={isMobile ? 'middle' : 'small'}
                           />
                           <Button
@@ -342,7 +343,7 @@ export function OneToOneBlock({
                             danger
                             icon={<DeleteOutlined />}
                             onClick={() => onRemoveQuestion(question.id)}
-                            aria-label="Удалить вопрос"
+                            aria-label={t('oneToOne.deleteQuestionAria')}
                             size={isMobile ? 'middle' : 'small'}
                           />
                         </Space>
@@ -362,20 +363,20 @@ export function OneToOneBlock({
                         block={isMobile}
                         size={isMobile ? 'large' : 'middle'}
                       >
-                        Сохранить
+                        {t('common.save')}
                       </Button>
                       <Button
                         onClick={cancelEdit}
                         block={isMobile}
                         size={isMobile ? 'large' : 'middle'}
                       >
-                        Отмена
+                        {t('common.cancel')}
                       </Button>
                     </Space>
                   )}
                   <Input.TextArea
                     rows={2}
-                    placeholder="Ответ на вопрос..."
+                    placeholder={t('oneToOne.answerPlaceholder')}
                     value={question.answer}
                     onChange={(e) => onChangeAnswer(question.id, e.target.value)}
                   />

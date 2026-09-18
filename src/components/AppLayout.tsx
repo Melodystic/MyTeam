@@ -5,6 +5,7 @@ import {
   Button,
   Dropdown,
   Layout as AntLayout,
+  Segmented,
   Space,
   Switch,
   Typography,
@@ -19,6 +20,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
 import { useEmployees } from '../context/EmployeesContext';
 import { useIsMobile } from '../hooks/useBreakpoint';
 
@@ -26,6 +28,7 @@ const { Header, Content } = AntLayout;
 
 export function AppLayout() {
   const { mode, toggleTheme } = useTheme();
+  const { locale, setLocale, t } = useLocale();
   const { exportDatabase, importDatabase } = useEmployees();
   const { token } = theme.useToken();
   const { message, modal } = App.useApp();
@@ -35,19 +38,18 @@ export function AppLayout() {
   const handleExport = async () => {
     try {
       await exportDatabase();
-      message.success('База выгружена в JSON-файл');
+      message.success(t('layout.exportSuccess'));
     } catch {
-      message.error('Не удалось выгрузить базу');
+      message.error(t('layout.exportError'));
     }
   };
 
   const handleImportClick = () => {
     modal.confirm({
-      title: 'Загрузить базу из файла?',
-      content:
-        'Текущие данные в этом браузере будут полностью заменены содержимым файла резервной копии.',
-      okText: 'Выбрать файл',
-      cancelText: 'Отмена',
+      title: t('layout.importTitle'),
+      content: t('layout.importWarning'),
+      okText: t('layout.chooseFile'),
+      cancelText: t('common.cancel'),
       onOk: () => {
         fileInputRef.current?.click();
       },
@@ -61,9 +63,11 @@ export function AppLayout() {
 
     try {
       await importDatabase(file);
-      message.success('База успешно загружена');
+      message.success(t('layout.importSuccess'));
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Не удалось загрузить базу');
+      message.error(
+        error instanceof Error ? error.message : t('layout.importError'),
+      );
     }
   };
 
@@ -73,11 +77,24 @@ export function AppLayout() {
       <Switch
         checked={mode === 'dark'}
         onChange={toggleTheme}
-        aria-label="Переключить тему"
+        aria-label={t('layout.themeToggle')}
         size={isMobile ? 'small' : 'default'}
       />
       <MoonOutlined style={{ color: token.colorTextSecondary }} />
     </div>
+  );
+
+  const languageToggle = (
+    <Segmented
+      value={locale}
+      onChange={setLocale}
+      options={[
+        { label: 'RU', value: 'ru' },
+        { label: 'EN', value: 'en' },
+      ]}
+      size="small"
+      aria-label={t('layout.language')}
+    />
   );
 
   return (
@@ -126,19 +143,20 @@ export function AppLayout() {
           {isMobile ? (
             <>
               {themeToggle}
+              {languageToggle}
               <Dropdown
                 menu={{
                   items: [
                     {
                       key: 'export',
                       icon: <DownloadOutlined />,
-                      label: 'Сохранить базу',
+                      label: t('layout.export'),
                       onClick: () => void handleExport(),
                     },
                     {
                       key: 'import',
                       icon: <UploadOutlined />,
-                      label: 'Загрузить базу',
+                      label: t('layout.import'),
                       onClick: handleImportClick,
                     },
                   ],
@@ -149,7 +167,7 @@ export function AppLayout() {
                 <Button
                   type="text"
                   icon={<MoreOutlined />}
-                  aria-label="Меню"
+                  aria-label={t('layout.menu')}
                   style={{ width: 40, height: 40 }}
                 />
               </Dropdown>
@@ -157,12 +175,13 @@ export function AppLayout() {
           ) : (
             <>
               <Button icon={<DownloadOutlined />} onClick={() => void handleExport()}>
-                Сохранить базу
+                {t('layout.export')}
               </Button>
               <Button icon={<UploadOutlined />} onClick={handleImportClick}>
-                Загрузить базу
+                {t('layout.import')}
               </Button>
               {themeToggle}
+              {languageToggle}
             </>
           )}
           <input

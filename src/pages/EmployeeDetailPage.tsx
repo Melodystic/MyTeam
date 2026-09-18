@@ -11,6 +11,7 @@ import { FeedbackBlock } from '../components/FeedbackBlock';
 import { TaskSettingBlock } from '../components/TaskSettingBlock';
 import { getFullName } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 export function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +42,7 @@ export function EmployeeDetailPage() {
   } = useEmployees();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { t } = useLocale();
 
   if (loading) {
     return (
@@ -54,8 +56,8 @@ export function EmployeeDetailPage() {
 
   if (!employee) {
     return (
-      <Empty description="Сотрудник не найден" style={{ marginTop: 48 }}>
-        <Link to="/">Вернуться к списку</Link>
+      <Empty description={t('detail.notFound')} style={{ marginTop: 48 }}>
+        <Link to="/">{t('detail.returnToList')}</Link>
       </Empty>
     );
   }
@@ -77,13 +79,14 @@ export function EmployeeDetailPage() {
             fontSize: 14,
           }}
         >
-          <ArrowLeftOutlined />К команде
+          <ArrowLeftOutlined />
+          {t('detail.backToTeam')}
         </Link>
       ) : (
         <Breadcrumb
           style={{ marginBottom: 16 }}
           items={[
-            { title: <Link to="/">Команда</Link> },
+            { title: <Link to="/">{t('detail.team')}</Link> },
             { title: fullName },
           ]}
         />
@@ -106,10 +109,10 @@ export function EmployeeDetailPage() {
                 style={{ fontSize: isMobile ? 13 : 14 }}
               >
                 <Typography.Text strong>
-                  {assignment.project || 'Проект не указан'}
+                  {assignment.project || t('employees.projectMissing')}
                 </Typography.Text>
-                {' · РП: '}
-                {assignment.projectManager || 'не указан'}
+                {t('employees.managerPrefix')}
+                {assignment.projectManager || t('employees.notSpecified')}
               </Typography.Text>
             ))}
           </div>
@@ -130,7 +133,7 @@ export function EmployeeDetailPage() {
           items={[
             {
               key: 'needs',
-              label: isMobile ? 'Потребности' : 'Базовые потребности',
+              label: isMobile ? t('tabs.needsMobile') : t('tabs.needs'),
               children: (
                 <NeedsBlock
                   employee={employee}
@@ -148,7 +151,7 @@ export function EmployeeDetailPage() {
             },
             {
               key: 'metrics',
-              label: 'Метрики',
+              label: t('tabs.metrics'),
               children: (
                 <MetricsBlock
                   employee={employee}
@@ -165,7 +168,9 @@ export function EmployeeDetailPage() {
             },
             {
               key: 'leadership',
-              label: isMobile ? 'Стиль' : 'Предпочтительный стиль руководства',
+              label: isMobile
+                ? t('tabs.leadershipMobile')
+                : t('tabs.leadership'),
               children: (
                 <LeadershipBlock
                   value={employee.leadershipStyle}
@@ -175,12 +180,12 @@ export function EmployeeDetailPage() {
             },
             {
               key: 'tasks',
-              label: isMobile ? 'Задачи' : 'Постановка задач',
+              label: isMobile ? t('tabs.tasksMobile') : t('tabs.tasks'),
               children: <TaskSettingBlock />,
             },
             {
               key: 'notes',
-              label: 'One to one',
+              label: t('tabs.oneToOne'),
               children: (
                 <OneToOneBlock
                   prep={employee.oneToOnePrep}
@@ -210,7 +215,7 @@ export function EmployeeDetailPage() {
             },
             {
               key: 'delegation',
-              label: 'Делегирование',
+              label: t('tabs.delegation'),
               children: (
                 <DelegationBlock
                   notes={employee.delegationNotes}
@@ -223,7 +228,9 @@ export function EmployeeDetailPage() {
             },
             {
               key: 'feedback',
-              label: isMobile ? 'Фидбек' : 'Обратная связь',
+              label: isMobile
+                ? t('tabs.feedbackMobile')
+                : t('tabs.feedback'),
               children: (
                 <FeedbackBlock
                   feedbackType={employee.feedbackType}

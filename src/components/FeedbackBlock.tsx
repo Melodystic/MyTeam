@@ -1,17 +1,12 @@
 import { Alert, Collapse, Select, Space, Typography } from 'antd';
 import { NotesBlock } from './NotesBlock';
 import {
-  CRITICISM_RULES,
-  FEEDBACK_HOW_TO,
-  FEEDBACK_MODELS,
-  FEEDBACK_OPTIONS,
-  FEEDBACK_REMEMBER,
-  FEEDBACK_RULES,
   type ColleagueFeedback,
   type FeedbackType,
 } from '../types/employee';
 import { ColleagueFeedbackBlock } from './ColleagueFeedbackBlock';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface FeedbackBlockProps {
   feedbackType: FeedbackType;
@@ -35,21 +30,27 @@ export function FeedbackBlock({
   onAddColleagueFeedback,
 }: FeedbackBlockProps) {
   const isMobile = useIsMobile();
-  const selected = FEEDBACK_OPTIONS.find((option) => option.value === feedbackType);
+  const { domain, t } = useLocale();
+  const selected = domain.FEEDBACK_OPTIONS.find(
+    (option) => option.value === feedbackType,
+  );
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
       <div>
         <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-          Тип обратной связи
+          {t('feedback.type')}
         </Typography.Text>
         <Select
           allowClear
-          placeholder="Выберите тип"
+          placeholder={t('feedback.placeholder')}
           style={{ width: '100%', maxWidth: isMobile ? '100%' : 420 }}
           size={isMobile ? 'large' : 'middle'}
           value={feedbackType ?? undefined}
-          options={FEEDBACK_OPTIONS.map(({ value, label }) => ({ value, label }))}
+          options={domain.FEEDBACK_OPTIONS.map(({ value, label }) => ({
+            value,
+            label,
+          }))}
           onChange={(next) => onChangeType(next ?? null)}
         />
         {selected && (
@@ -68,13 +69,13 @@ export function FeedbackBlock({
         items={[
           {
             key: 'feedback-models',
-            label: 'Типы обратной связи',
+            label: t('feedback.models'),
             children: (
               <Collapse
                 accordion
                 bordered={false}
                 style={{ background: 'transparent' }}
-                items={FEEDBACK_MODELS.map((model) => ({
+                items={domain.FEEDBACK_MODELS.map((model) => ({
                   key: model.key,
                   label: <Typography.Text strong>{model.title}</Typography.Text>,
                   children: (
@@ -108,11 +109,11 @@ export function FeedbackBlock({
 
       <div>
         <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-          Заметки
+          {t('feedback.notes')}
         </Typography.Text>
         <NotesBlock
           value={feedbackNotes}
-          placeholder="Заметки по обратной связи..."
+          placeholder={t('feedback.notesPlaceholder')}
           onChange={onChangeNotes}
         />
       </div>
@@ -126,10 +127,10 @@ export function FeedbackBlock({
         items={[
           {
             key: 'feedback-rules',
-            label: 'Как давать обратную связь',
+            label: t('feedback.rules'),
             children: (
               <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                {FEEDBACK_RULES.map((rule, index) => (
+                {domain.FEEDBACK_RULES.map((rule, index) => (
                   <div key={rule.title}>
                     <Typography.Text strong>
                       {index + 1}. {rule.title}
@@ -147,10 +148,10 @@ export function FeedbackBlock({
           },
           {
             key: 'feedback-how-to',
-            label: 'Как давать фидбек',
+            label: t('feedback.howTo'),
             children: (
               <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {FEEDBACK_HOW_TO.map((item) => (
+                {domain.FEEDBACK_HOW_TO.map((item) => (
                   <li key={item} style={{ marginBottom: 8 }}>
                     <Typography.Text type="secondary">{item}</Typography.Text>
                   </li>
@@ -160,10 +161,10 @@ export function FeedbackBlock({
           },
           {
             key: 'feedback-remember',
-            label: 'Что важно помнить!',
+            label: t('feedback.remember'),
             children: (
               <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                {FEEDBACK_REMEMBER.map((item) => (
+                {domain.FEEDBACK_REMEMBER.map((item) => (
                   <Typography.Paragraph
                     key={item}
                     type="secondary"
@@ -182,10 +183,10 @@ export function FeedbackBlock({
         items={[
           {
             key: 'criticism-rules',
-            label: 'Десять правил искусной критики',
+            label: t('feedback.criticism'),
             children: (
               <ol style={{ margin: 0, paddingLeft: 20 }}>
-                {CRITICISM_RULES.map((rule) => (
+                {domain.CRITICISM_RULES.map((rule) => (
                   <li key={rule} style={{ marginBottom: 8 }}>
                     <Typography.Text type="secondary">{rule}</Typography.Text>
                   </li>

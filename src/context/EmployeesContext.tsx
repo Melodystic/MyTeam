@@ -30,6 +30,7 @@ import {
   type NeedMark,
   type OneToOneMeetingNote,
 } from '../types/employee';
+import { useLocale } from './LocaleContext';
 
 interface EmployeesContextValue {
   employees: Employee[];
@@ -80,6 +81,7 @@ interface EmployeesContextValue {
 const EmployeesContext = createContext<EmployeesContextValue | null>(null);
 
 export function EmployeesProvider({ children }: { children: ReactNode }) {
+  const { setLocale, t } = useLocale();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -488,7 +490,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      throw new Error('Файл не является корректным JSON');
+      throw new Error(t('errors.invalidJson'));
     }
 
     const backup = parsed as MyTeamBackup;
@@ -498,7 +500,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       !Array.isArray(backup.employees) ||
       !Array.isArray(backup.settings)
     ) {
-      throw new Error('Неверный формат файла резервной копии MyTeam');
+      throw new Error(t('errors.invalidBackup'));
     }
 
     const employeesNormalized = backup.employees.map((employee) =>
@@ -511,7 +513,15 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     });
 
     setEmployees(employeesNormalized);
-  }, []);
+    const importedLocale = backup.settings.find(
+      (setting) => setting.key === 'locale',
+    )?.value;
+    if (importedLocale === 'ru' || importedLocale === 'en') {
+      setLocale(importedLocale);
+    } else {
+      setLocale('ru');
+    }
+  }, [setLocale, t]);
 
   const value = useMemo(
     () => ({

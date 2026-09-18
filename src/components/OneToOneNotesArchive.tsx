@@ -14,6 +14,7 @@ import { EditOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import type { OneToOneMeetingNote } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface OneToOneNotesArchiveProps {
   notes: OneToOneMeetingNote[];
@@ -29,6 +30,7 @@ export function OneToOneNotesArchive({
 }: OneToOneNotesArchiveProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { dateFormat, formatDate, t } = useLocale();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingDate, setEditingDate] = useState<Dayjs | null>(null);
   const [editingPrep, setEditingPrep] = useState('');
@@ -71,12 +73,12 @@ export function OneToOneNotesArchive({
       items={[
         {
           key: 'saved-notes',
-          label: `Сохранённые заметки (${notes.length})`,
+          label: t('archive.title', { count: notes.length }),
           children:
             sortedNotes.length === 0 ? (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Пока нет сохранённых встреч"
+                description={t('archive.empty')}
               />
             ) : (
               <List
@@ -100,27 +102,31 @@ export function OneToOneNotesArchive({
                           <DatePicker
                             value={editingDate}
                             onChange={setEditingDate}
-                            format="DD.MM.YYYY"
+                            format={dateFormat}
                             allowClear={false}
                             style={{ width: isMobile ? '100%' : 180 }}
                           />
                           <div>
-                            <Typography.Text strong>Вопросы и подготовка</Typography.Text>
+                            <Typography.Text strong>
+                              {t('oneToOne.prepTitle')}
+                            </Typography.Text>
                             <Input.TextArea
                               rows={3}
                               value={editingPrep}
                               onChange={(event) => setEditingPrep(event.target.value)}
-                              placeholder="Темы и что подготовить..."
+                              placeholder={t('oneToOne.prepPlaceholder')}
                               style={{ marginTop: 8 }}
                             />
                           </div>
                           <div>
-                            <Typography.Text strong>Заметки после встречи</Typography.Text>
+                            <Typography.Text strong>
+                              {t('oneToOne.afterTitle')}
+                            </Typography.Text>
                             <Input.TextArea
                               rows={3}
                               value={editingAfter}
                               onChange={(event) => setEditingAfter(event.target.value)}
-                              placeholder="Итоги и договорённости..."
+                              placeholder={t('oneToOne.afterShortPlaceholder')}
                               style={{ marginTop: 8 }}
                             />
                           </div>
@@ -138,10 +144,10 @@ export function OneToOneNotesArchive({
                               }
                               block={isMobile}
                             >
-                              Сохранить
+                              {t('common.save')}
                             </Button>
                             <Button onClick={cancelEdit} block={isMobile}>
-                              Отмена
+                              {t('common.cancel')}
                             </Button>
                           </Space>
                         </Space>
@@ -157,23 +163,25 @@ export function OneToOneNotesArchive({
                             }}
                           >
                             <Typography.Text strong>
-                              Встреча {dayjs(note.meetingDate).format('DD.MM.YYYY')}
+                              {t('archive.meeting', {
+                                date: formatDate(note.meetingDate),
+                              })}
                             </Typography.Text>
                             <Button
                               type="text"
                               icon={<EditOutlined />}
                               onClick={() => startEdit(note)}
-                              aria-label="Редактировать заметки встречи"
+                              aria-label={t('archive.editAria')}
                               size={isMobile ? 'middle' : 'small'}
                             >
-                              {!isMobile && 'Редактировать'}
+                              {!isMobile && t('common.edit')}
                             </Button>
                           </div>
 
                           {note.prep && (
                             <div style={{ marginBottom: note.after ? 12 : 0 }}>
                               <Typography.Text type="secondary">
-                                Вопросы и подготовка
+                                {t('oneToOne.prepTitle')}
                               </Typography.Text>
                               <Typography.Paragraph
                                 style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}
@@ -185,7 +193,7 @@ export function OneToOneNotesArchive({
                           {note.after && (
                             <div>
                               <Typography.Text type="secondary">
-                                Заметки после встречи
+                                {t('oneToOne.afterTitle')}
                               </Typography.Text>
                               <Typography.Paragraph
                                 style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}

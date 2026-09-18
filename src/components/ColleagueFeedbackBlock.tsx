@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Button, Collapse, Empty, Input, List, Space, Typography, theme } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import type { ColleagueFeedback } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
 interface ColleagueFeedbackBlockProps {
   feedback: ColleagueFeedback[];
@@ -16,6 +16,7 @@ export function ColleagueFeedbackBlock({
 }: ColleagueFeedbackBlockProps) {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { formatDate, t } = useLocale();
   const [colleagueName, setColleagueName] = useState('');
   const [position, setPosition] = useState('');
   const [comment, setComment] = useState('');
@@ -44,7 +45,7 @@ export function ColleagueFeedbackBlock({
       items={[
         {
           key: 'colleague-feedback',
-          label: `Обратная связь от коллег (${feedback.length})`,
+          label: t('colleague.title', { count: feedback.length }),
           children: (
             <Space direction="vertical" size={20} style={{ width: '100%' }}>
               <form onSubmit={handleSubmit}>
@@ -61,12 +62,12 @@ export function ColleagueFeedbackBlock({
                       type="secondary"
                       style={{ display: 'block', marginBottom: 6 }}
                     >
-                      Имя коллеги
+                      {t('colleague.name')}
                     </Typography.Text>
                     <Input
                       value={colleagueName}
                       onChange={(event) => setColleagueName(event.target.value)}
-                      placeholder="Введите имя"
+                      placeholder={t('colleague.namePlaceholder')}
                       size={isMobile ? 'large' : 'middle'}
                     />
                   </div>
@@ -75,12 +76,12 @@ export function ColleagueFeedbackBlock({
                       type="secondary"
                       style={{ display: 'block', marginBottom: 6 }}
                     >
-                      Должность
+                      {t('colleague.position')}
                     </Typography.Text>
                     <Input
                       value={position}
                       onChange={(event) => setPosition(event.target.value)}
-                      placeholder="Введите должность"
+                      placeholder={t('colleague.positionPlaceholder')}
                       size={isMobile ? 'large' : 'middle'}
                     />
                   </div>
@@ -90,12 +91,12 @@ export function ColleagueFeedbackBlock({
                   type="secondary"
                   style={{ display: 'block', marginBottom: 6 }}
                 >
-                  Комментарий
+                  {t('colleague.comment')}
                 </Typography.Text>
                 <Input.TextArea
                   value={comment}
                   onChange={(event) => setComment(event.target.value)}
-                  placeholder="Введите комментарий коллеги..."
+                  placeholder={t('colleague.commentPlaceholder')}
                   rows={4}
                 />
                 <Button
@@ -107,18 +108,18 @@ export function ColleagueFeedbackBlock({
                   size={isMobile ? 'large' : 'middle'}
                   style={{ marginTop: 12 }}
                 >
-                  Сохранить
+                  {t('common.save')}
                 </Button>
               </form>
 
               <div>
                 <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-                  Сохранённые комментарии
+                  {t('colleague.saved')}
                 </Typography.Title>
                 {sortedFeedback.length === 0 ? (
                   <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="Пока нет обратной связи от коллег"
+                    description={t('colleague.empty')}
                   />
                 ) : (
                   <List
@@ -138,7 +139,7 @@ export function ColleagueFeedbackBlock({
                           {item.colleagueName}
                         </Typography.Text>
                         <Typography.Text type="secondary" style={{ display: 'block' }}>
-                          {item.position} · {dayjs(item.createdAt).format('DD.MM.YYYY HH:mm')}
+                          {item.position} · {formatDate(item.createdAt, true)}
                         </Typography.Text>
                         <Typography.Paragraph
                           style={{ margin: '10px 0 0', whiteSpace: 'pre-wrap' }}

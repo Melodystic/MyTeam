@@ -1,8 +1,14 @@
 import { Collapse, Space, Typography, theme } from 'antd';
-import { SMART_CRITERIA, TASK_SETTING_METHODS } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useLocale } from '../context/LocaleContext';
 
-function MethodSection({ title, items }: { title: string; items: string[] }) {
+function MethodSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: readonly string[];
+}) {
   return (
     <div>
       <Typography.Text strong style={{ display: 'block', marginBottom: 6 }}>
@@ -22,6 +28,7 @@ function MethodSection({ title, items }: { title: string; items: string[] }) {
 export function TaskSettingBlock() {
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
+  const { domain, t } = useLocale();
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
@@ -34,14 +41,13 @@ export function TaskSettingBlock() {
         }}
       >
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>
-          Постановка задач по SMART
+          {t('tasks.smartTitle')}
         </Typography.Title>
         <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          SMART помогает сформулировать задачу так, чтобы сотрудник понимал, что делать,
-          как понять успех и к какому сроку нужно успеть.
+          {t('tasks.smartIntro')}
         </Typography.Paragraph>
         <Space direction="vertical" size={16} style={{ width: '100%' }}>
-          {SMART_CRITERIA.map((item) => (
+          {domain.SMART_CRITERIA.map((item) => (
             <div key={item.letter} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
               <div
                 style={{
@@ -78,11 +84,11 @@ export function TaskSettingBlock() {
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          Три способа постановки задачи
+          {t('tasks.methodsTitle')}
         </Typography.Title>
         <Collapse
           accordion
-          items={TASK_SETTING_METHODS.map((method) => ({
+          items={domain.TASK_SETTING_METHODS.map((method) => ({
             key: method.key,
             label: <Typography.Text strong>{method.title}</Typography.Text>,
             children: (
@@ -90,10 +96,13 @@ export function TaskSettingBlock() {
                 <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
                   {method.intro}
                 </Typography.Paragraph>
-                <MethodSection title="Как формулировать" items={method.howTo} />
-                <MethodSection title="Когда использовать" items={method.whenToUse} />
-                <MethodSection title="Плюсы" items={method.pros} />
-                <MethodSection title="Минусы" items={method.cons} />
+                <MethodSection title={t('tasks.howTo')} items={method.howTo} />
+                <MethodSection
+                  title={t('tasks.whenToUse')}
+                  items={method.whenToUse}
+                />
+                <MethodSection title={t('tasks.pros')} items={method.pros} />
+                <MethodSection title={t('tasks.cons')} items={method.cons} />
               </Space>
             ),
           }))}
