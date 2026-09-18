@@ -1,6 +1,12 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { Employee } from '../types/employee';
 import type { AppLocale } from '../i18n/ui';
+import {
+  normalizeWorkspaceNotes,
+  parseWorkMode,
+  type WorkMode,
+  type WorkspaceNotes,
+} from '../types/workspace';
 
 interface MyTeamDB extends DBSchema {
   employees: {
@@ -25,6 +31,19 @@ const DB_NAME = 'myteam-db';
 const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBPDatabase<MyTeamDB>> | null = null;
+
+const backupImportedListeners = new Set<() => void>();
+
+export function subscribeBackupImported(listener: () => void) {
+  backupImportedListeners.add(listener);
+  return () => {
+    backupImportedListeners.delete(listener);
+  };
+}
+
+function notifyBackupImported() {
+  backupImportedListeners.forEach((listener) => listener());
+}
 
 export function getDB() {
   if (!dbPromise) {
@@ -85,6 +104,31 @@ export async function saveLocaleSetting(locale: AppLocale): Promise<void> {
   await db.put('settings', { key: 'locale', value: locale });
 }
 
+export async function getWorkModeSetting(): Promise<WorkMode> {
+  const db = await getDB();
+  const row = await db.get('settings', 'workMode');
+  return parseWorkMode(row?.value);
+}
+
+export async function saveWorkModeSetting(mode: WorkMode): Promise<void> {
+  const db = await getDB();
+  await db.put('settings', { key: 'workMode', value: mode });
+}
+
+export async function getWorkspaceNotes(): Promise<WorkspaceNotes> {
+  const db = await getDB();
+  const row = await db.get('settings', 'workspaceNotes');
+  return normalizeWorkspaceNotes(row?.value);
+}
+
+export async function saveWorkspaceNotes(notes: WorkspaceNotes): Promise<void> {
+  const db = await getDB();
+  await db.put('settings', {
+    key: 'workspaceNotes',
+    value: JSON.stringify(notes),
+  });
+}
+
 export async function exportBackup(): Promise<MyTeamBackup> {
   const db = await getDB();
   const employees = await db.getAllFromIndex('employees', 'by-createdAt');
@@ -113,4 +157,5 @@ export async function importBackup(backup: MyTeamBackup): Promise<void> {
   }
 
   await tx.done;
+  notifyBackupImported();
 }

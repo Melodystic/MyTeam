@@ -8,6 +8,7 @@ import {
   List,
   Modal,
   Popconfirm,
+  Segmented,
   Space,
   Typography,
   message,
@@ -16,12 +17,15 @@ import {
 import {
   DeleteOutlined,
   EditOutlined,
+  FileTextOutlined,
   MinusCircleOutlined,
   PlusOutlined,
   RightOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useEmployees } from '../context/EmployeesContext';
+import { useWorkspace } from '../context/WorkspaceContext';
+import { parseWorkMode, type WorkMode } from '../types/workspace';
 import {
   getFullName,
   type Employee,
@@ -66,12 +70,14 @@ function ProjectAssignmentsMeta({
 export function EmployeesPage() {
   const { employees, loading, addEmployee, updateEmployeeProfile, removeEmployee } =
     useEmployees();
+  const { workMode, setWorkMode } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [form] = Form.useForm<EmployeeFormValues>();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
   const { locale, t } = useLocale();
+  const isHeadOfLeads = workMode === 'headOfLeads';
 
   const openCreate = () => {
     setEditingEmployee(null);
@@ -124,7 +130,7 @@ export function EmployeesPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: isMobile ? 'stretch' : 'center',
-          marginBottom: 24,
+          marginBottom: 16,
           gap: 12,
           flexDirection: isMobile ? 'column' : 'row',
           flexWrap: 'wrap',
@@ -135,7 +141,11 @@ export function EmployeesPage() {
             {t('employees.title')}
           </Typography.Title>
           <Typography.Text type="secondary">
-            {t('employees.subtitle')}
+            {t(
+              isHeadOfLeads
+                ? 'employees.subtitleHeadOfLeads'
+                : 'employees.subtitle',
+            )}
           </Typography.Text>
         </div>
         <Button
@@ -148,6 +158,61 @@ export function EmployeesPage() {
           {t('employees.add')}
         </Button>
       </div>
+
+      <Segmented<WorkMode>
+        value={workMode}
+        onChange={(value) => setWorkMode(parseWorkMode(value))}
+        block={isMobile}
+        size={isMobile ? 'large' : 'middle'}
+        style={{ marginBottom: 16, maxWidth: isMobile ? '100%' : 420 }}
+        aria-label={t('mode.switchAria')}
+        options={[
+          { label: t('mode.team'), value: 'team' },
+          { label: t('mode.headOfLeads'), value: 'headOfLeads' },
+        ]}
+      />
+
+      {isHeadOfLeads && (
+        <Link
+          to="/notes"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: isMobile ? 12 : 16,
+            marginBottom: 16,
+            background: token.colorBgContainer,
+            borderRadius: token.borderRadiusLG,
+            border: `1px solid ${token.colorBorderSecondary}`,
+            color: token.colorText,
+            textDecoration: 'none',
+          }}
+          aria-label={t('leadNotes.cardAria')}
+        >
+          <FileTextOutlined
+            style={{
+              fontSize: 22,
+              color: token.colorPrimary,
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Typography.Text strong style={{ display: 'block' }}>
+              {t('leadNotes.cardTitle')}
+            </Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+              {t('leadNotes.cardSubtitle')}
+            </Typography.Text>
+          </div>
+          <RightOutlined
+            style={{
+              color: token.colorTextQuaternary,
+              fontSize: 12,
+              flexShrink: 0,
+            }}
+          />
+        </Link>
+      )}
 
       <List
         loading={loading}
