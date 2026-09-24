@@ -28,6 +28,7 @@ import {
   type LeadershipStyle,
   type NeedKey,
   type NeedMark,
+  type CharacterizationNote,
   type OneToOneMeetingNote,
 } from '../types/employee';
 import { useLocale } from './LocaleContext';
@@ -73,6 +74,12 @@ interface EmployeesContextValue {
     colleagueName: string,
     position: string,
     comment: string,
+  ) => void;
+  addCharacterization: (id: string, date: number, text: string) => void;
+  updateCharacterization: (
+    id: string,
+    noteId: string,
+    note: Pick<CharacterizationNote, 'date' | 'text'>,
   ) => void;
   exportDatabase: () => Promise<void>;
   importDatabase: (file: File) => Promise<void>;
@@ -138,6 +145,9 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
         projectAssignments: normalizeProjectAssignments(
           profile.projectAssignments,
         ),
+        ...(profile.leadName !== undefined
+          ? { leadName: profile.leadName.trim() }
+          : {}),
       }));
     },
     [updateEmployee],
@@ -470,6 +480,55 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     [updateEmployee],
   );
 
+  const addCharacterization = useCallback(
+    (id: string, date: number, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      const now = Date.now();
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        characterizations: [
+          {
+            id: crypto.randomUUID(),
+            date,
+            text: trimmed,
+            createdAt: now,
+            updatedAt: now,
+          },
+          ...employee.characterizations,
+        ],
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateCharacterization = useCallback(
+    (
+      id: string,
+      noteId: string,
+      updates: Pick<CharacterizationNote, 'date' | 'text'>,
+    ) => {
+      const text = updates.text.trim();
+      if (!text) return;
+
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        characterizations: employee.characterizations.map((note) =>
+          note.id === noteId
+            ? {
+                ...note,
+                date: updates.date,
+                text,
+                updatedAt: Date.now(),
+              }
+            : note,
+        ),
+      }));
+    },
+    [updateEmployee],
+  );
+
   const exportDatabase = useCallback(async () => {
     const backup = await exportBackup();
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
@@ -552,6 +611,8 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateFeedbackType,
       updateFeedbackNotes,
       addColleagueFeedback,
+      addCharacterization,
+      updateCharacterization,
       exportDatabase,
       importDatabase,
     }),
@@ -583,6 +644,8 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateFeedbackType,
       updateFeedbackNotes,
       addColleagueFeedback,
+      addCharacterization,
+      updateCharacterization,
       exportDatabase,
       importDatabase,
     ],

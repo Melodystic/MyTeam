@@ -21,6 +21,7 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
   RightOutlined,
+  SolutionOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useEmployees } from '../context/EmployeesContext';
@@ -173,45 +174,91 @@ export function EmployeesPage() {
       />
 
       {isHeadOfLeads && (
-        <Link
-          to="/notes"
+        <div
           style={{
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: 'column',
             gap: 12,
-            padding: isMobile ? 12 : 16,
             marginBottom: 16,
-            background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,
-            border: `1px solid ${token.colorBorderSecondary}`,
-            color: token.colorText,
-            textDecoration: 'none',
           }}
-          aria-label={t('leadNotes.cardAria')}
         >
-          <FileTextOutlined
+          <Link
+            to="/notes"
             style={{
-              fontSize: 22,
-              color: token.colorPrimary,
-              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: isMobile ? 12 : 16,
+              background: token.colorBgContainer,
+              borderRadius: token.borderRadiusLG,
+              border: `1px solid ${token.colorBorderSecondary}`,
+              color: token.colorText,
+              textDecoration: 'none',
             }}
-          />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Typography.Text strong style={{ display: 'block' }}>
-              {t('leadNotes.cardTitle')}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-              {t('leadNotes.cardSubtitle')}
-            </Typography.Text>
-          </div>
-          <RightOutlined
+            aria-label={t('leadNotes.cardAria')}
+          >
+            <FileTextOutlined
+              style={{
+                fontSize: 22,
+                color: token.colorPrimary,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Typography.Text strong style={{ display: 'block' }}>
+                {t('leadNotes.cardTitle')}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                {t('leadNotes.cardSubtitle')}
+              </Typography.Text>
+            </div>
+            <RightOutlined
+              style={{
+                color: token.colorTextQuaternary,
+                fontSize: 12,
+                flexShrink: 0,
+              }}
+            />
+          </Link>
+          <Link
+            to="/profiles"
             style={{
-              color: token.colorTextQuaternary,
-              fontSize: 12,
-              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: isMobile ? 12 : 16,
+              background: token.colorBgContainer,
+              borderRadius: token.borderRadiusLG,
+              border: `1px solid ${token.colorBorderSecondary}`,
+              color: token.colorText,
+              textDecoration: 'none',
             }}
-          />
-        </Link>
+            aria-label={t('profiles.cardAria')}
+          >
+            <SolutionOutlined
+              style={{
+                fontSize: 22,
+                color: token.colorPrimary,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Typography.Text strong style={{ display: 'block' }}>
+                {t('profiles.cardTitle')}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                {t('profiles.cardSubtitle')}
+              </Typography.Text>
+            </div>
+            <RightOutlined
+              style={{
+                color: token.colorTextQuaternary,
+                fontSize: 12,
+                flexShrink: 0,
+              }}
+            />
+          </Link>
+        </div>
       )}
 
       <List

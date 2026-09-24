@@ -664,10 +664,19 @@ export interface ProjectAssignment {
   projectManager: string;
 }
 
+export interface CharacterizationNote {
+  id: string;
+  date: number;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface EmployeeProfileInput {
   firstName: string;
   lastName: string;
   projectAssignments: ProjectAssignment[];
+  leadName?: string;
 }
 
 export interface Employee {
@@ -686,6 +695,8 @@ export interface Employee {
   feedbackType: FeedbackType;
   feedbackNotes: string;
   colleagueFeedback: ColleagueFeedback[];
+  leadName: string;
+  characterizations: CharacterizationNote[];
   createdAt: number;
 }
 
@@ -757,8 +768,41 @@ export function createEmployee(profile: EmployeeProfileInput): Employee {
     feedbackType: null,
     feedbackNotes: '',
     colleagueFeedback: [],
+    leadName: profile.leadName?.trim() ?? '',
+    characterizations: [],
     createdAt: Date.now(),
   };
+}
+
+export function normalizeCharacterizations(
+  value: unknown,
+): CharacterizationNote[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((rawNote) => {
+    if (!rawNote || typeof rawNote !== 'object') return [];
+
+    const note = rawNote as Record<string, unknown>;
+    if (
+      typeof note.id !== 'string' ||
+      typeof note.text !== 'string' ||
+      typeof note.createdAt !== 'number'
+    ) {
+      return [];
+    }
+
+    const createdAt = note.createdAt;
+    return [
+      {
+        id: note.id,
+        date: typeof note.date === 'number' ? note.date : createdAt,
+        text: note.text,
+        createdAt,
+        updatedAt:
+          typeof note.updatedAt === 'number' ? note.updatedAt : createdAt,
+      },
+    ];
+  });
 }
 
 export function normalizeSavedNotes(value: unknown): SavedNote[] {
@@ -990,6 +1034,8 @@ export function normalizeEmployee(employee: Employee): Employee {
     feedbackType: employee.feedbackType ?? null,
     feedbackNotes: employee.feedbackNotes ?? '',
     colleagueFeedback: normalizeColleagueFeedback(employee.colleagueFeedback),
+    leadName: typeof employee.leadName === 'string' ? employee.leadName : '',
+    characterizations: normalizeCharacterizations(employee.characterizations),
   };
 }
 
