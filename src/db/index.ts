@@ -7,6 +7,10 @@ import {
   type WorkMode,
   type WorkspaceNotes,
 } from '../types/workspace';
+import {
+  normalizeDepartmentProfiles,
+  type DepartmentProfile,
+} from '../types/departmentProfile';
 
 interface MyTeamDB extends DBSchema {
   employees: {
@@ -126,6 +130,22 @@ export async function saveWorkspaceNotes(notes: WorkspaceNotes): Promise<void> {
   await db.put('settings', {
     key: 'workspaceNotes',
     value: JSON.stringify(notes),
+  });
+}
+
+export async function getDepartmentProfiles(): Promise<DepartmentProfile[]> {
+  const db = await getDB();
+  const row = await db.get('settings', 'departmentProfiles');
+  return normalizeDepartmentProfiles(row?.value);
+}
+
+export async function saveDepartmentProfiles(
+  profiles: DepartmentProfile[],
+): Promise<void> {
+  const db = await getDB();
+  await db.put('settings', {
+    key: 'departmentProfiles',
+    value: JSON.stringify(profiles),
   });
 }
 

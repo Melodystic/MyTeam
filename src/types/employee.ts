@@ -1039,6 +1039,9 @@ export function normalizeEmployee(employee: Employee): Employee {
   };
 }
 
-export function getFullName(employee: Employee): string {
-  return `${employee.lastName} ${employee.firstName}`.trim();
+export function getFullName(person: {
+  firstName: string;
+  lastName: string;
+}): string {
+  return `${person.lastName} ${person.firstName}`.trim();
 }

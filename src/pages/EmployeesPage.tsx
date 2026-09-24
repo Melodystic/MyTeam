@@ -156,7 +156,7 @@ export function EmployeesPage() {
           block={isMobile}
           size={isMobile ? 'large' : 'middle'}
         >
-          {t('employees.add')}
+          {t(isHeadOfLeads ? 'employees.addLead' : 'employees.add')}
         </Button>
       </div>
 
@@ -269,7 +269,9 @@ export function EmployeesPage() {
           emptyText: (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={t('employees.empty')}
+              description={t(
+                isHeadOfLeads ? 'employees.emptyHeadOfLeads' : 'employees.empty',
+              )}
             />
           ),
         }}

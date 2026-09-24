@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import {
+  AutoComplete,
   Breadcrumb,
   Button,
   Empty,
@@ -19,24 +20,28 @@ import {
 } from '@ant-design/icons';
 import { CharacterizationNotes } from '../components/CharacterizationNotes';
 import { useEmployees } from '../context/EmployeesContext';
+import { useProfiles } from '../context/ProfilesContext';
 import { getFullName, type ProjectAssignment } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { useLocale } from '../context/LocaleContext';
 
 interface ProfileFormValues {
+  firstName?: string;
+  lastName?: string;
   leadName: string;
   projectAssignments?: ProjectAssignment[];
 }
 
 export function ProfileDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { employees } = useEmployees();
   const {
     loading,
     getById,
-    updateEmployeeProfile,
-    addCharacterization,
-    updateCharacterization,
-  } = useEmployees();
+    updateProfile,
+    addProfileComment,
+    updateProfileComment,
+  } = useProfiles();
   const [form] = Form.useForm<ProfileFormValues>();
   const { token } = theme.useToken();
   const isMobile = useIsMobile();
@@ -50,9 +55,9 @@ export function ProfileDetailPage() {
     );
   }
 
-  const employee = id ? getById(id) : undefined;
+  const profile = id ? getById(id) : undefined;
 
-  if (!employee) {
+  if (!profile) {
     return (
       <Empty description={t('detail.notFound')} style={{ marginTop: 48 }}>
         <Link to="/profiles">{t('profiles.backToList')}</Link>
@@ -60,14 +65,18 @@ export function ProfileDetailPage() {
     );
   }
 
-  const fullName = getFullName(employee);
+  const fullName = getFullName(profile);
+  const fromTeam = !!profile.sourceEmployeeId;
+  const leadOptions = employees
+    .map((employee) => ({ value: getFullName(employee) }))
+    .filter((option) => option.value);
 
   const saveProfile = async () => {
     try {
       const values = await form.validateFields();
-      updateEmployeeProfile(employee.id, {
-        firstName: employee.firstName,
-        lastName: employee.lastName,
+      updateProfile(profile.id, {
+        firstName: values.firstName ?? profile.firstName,
+        lastName: values.lastName ?? profile.lastName,
         projectAssignments: values.projectAssignments ?? [],
         leadName: values.leadName ?? '',
       });
@@ -125,18 +134,57 @@ export function ProfileDetailPage() {
         }}
       >
         <Form
-          key={employee.id}
+          key={profile.id}
           form={form}
           layout="vertical"
           initialValues={{
-            leadName: employee.leadName,
-            projectAssignments: employee.projectAssignments,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            leadName: profile.leadName,
+            projectAssignments: profile.projectAssignments,
           }}
         >
+          {!fromTeam && (
+            <>
+              <Form.Item
+                name="lastName"
+                label={t('employees.lastName')}
+                rules={[{ required: true, message: t('employees.lastNameRequired') }]}
+                style={{ maxWidth: 420 }}
+              >
+                <Input
+                  placeholder={t('employees.lastNamePlaceholder')}
+                  size={isMobile ? 'large' : 'middle'}
+                />
+              </Form.Item>
+              <Form.Item
+                name="firstName"
+                label={t('employees.firstName')}
+                rules={[{ required: true, message: t('employees.firstNameRequired') }]}
+                style={{ maxWidth: 420 }}
+              >
+                <Input
+                  placeholder={t('employees.firstNamePlaceholder')}
+                  size={isMobile ? 'large' : 'middle'}
+                />
+              </Form.Item>
+            </>
+          )}
+          {fromTeam && (
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+              {t('profiles.fromTeam')}
+            </Typography.Text>
+          )}
           <Form.Item name="leadName" label={t('profiles.lead')} style={{ maxWidth: 420 }}>
-            <Input
+            <AutoComplete
+              options={leadOptions}
               placeholder={t('profiles.leadPlaceholder')}
               size={isMobile ? 'large' : 'middle'}
+              filterOption={(input, option) =>
+                String(option?.value ?? '')
+                  .toLowerCase()
+                  .includes(input.trim().toLowerCase())
+              }
             />
           </Form.Item>
 
@@ -224,10 +272,10 @@ export function ProfileDetailPage() {
         </Form>
 
         <CharacterizationNotes
-          notes={employee.characterizations}
-          onAdd={(date, text) => addCharacterization(employee.id, date, text)}
+          notes={profile.characterizations}
+          onAdd={(date, text) => addProfileComment(profile.id, date, text)}
           onUpdate={(noteId, note) =>
-            updateCharacterization(employee.id, noteId, note)
+            updateProfileComment(profile.id, noteId, note)
           }
         />
       </div>
