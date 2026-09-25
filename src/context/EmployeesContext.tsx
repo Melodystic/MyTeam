@@ -292,13 +292,14 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployee(id, (employee) => ({
         ...employee,
         oneToOneQuestions: [
-          ...(employee.oneToOneQuestions ?? []),
           {
             id: crypto.randomUUID(),
             text: trimmed,
             answer: '',
+            answered: false,
             createdAt: Date.now(),
           },
+          ...(employee.oneToOneQuestions ?? []),
         ],
       }));
     },
@@ -324,7 +325,9 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployee(id, (employee) => ({
         ...employee,
         oneToOneQuestions: (employee.oneToOneQuestions ?? []).map((question) =>
-          question.id === questionId ? { ...question, answer } : question,
+          question.id === questionId
+            ? { ...question, answer, answered: true }
+            : question,
         ),
       }));
     },

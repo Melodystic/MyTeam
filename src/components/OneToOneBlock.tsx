@@ -62,6 +62,8 @@ export function OneToOneBlock({
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
+  const [answerEditingId, setAnswerEditingId] = useState<string | null>(null);
   const [meetingDate, setMeetingDate] = useState<Dayjs>(dayjs());
 
   const panelStyle: CSSProperties = {
@@ -99,6 +101,39 @@ export function OneToOneBlock({
   const cancelEdit = () => {
     setEditingId(null);
     setEditingText('');
+  };
+
+  const orderedQuestions = [...questions].sort(
+    (a, b) => b.createdAt - a.createdAt,
+  );
+
+  const answerDraft = (question: OneToOneQuestion) =>
+    answerDrafts[question.id] ?? question.answer;
+
+  const changeAnswerDraft = (questionId: string, value: string) => {
+    setAnswerDrafts((current) => ({ ...current, [questionId]: value }));
+  };
+
+  const openAnswerEditor = (question: OneToOneQuestion) => {
+    setAnswerEditingId(question.id);
+    setAnswerDrafts((current) => ({
+      ...current,
+      [question.id]: question.answer,
+    }));
+  };
+
+  const closeAnswerEditor = (questionId: string) => {
+    setAnswerEditingId((current) => (current === questionId ? null : current));
+    setAnswerDrafts((current) => {
+      const next = { ...current };
+      delete next[questionId];
+      return next;
+    });
+  };
+
+  const saveAnswer = (question: OneToOneQuestion) => {
+    onChangeAnswer(question.id, answerDraft(question).trim());
+    closeAnswerEditor(question.id);
   };
 
   const saveMeeting = () => {
@@ -295,8 +330,10 @@ export function OneToOneBlock({
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {questions.map((question, index) => {
+            {orderedQuestions.map((question, index) => {
               const isEditing = editingId === question.id;
+              const isAnswerOpen =
+                !question.answered || answerEditingId === question.id;
 
               return (
                 <div
@@ -314,7 +351,7 @@ export function OneToOneBlock({
                       justifyContent: 'space-between',
                       alignItems: 'flex-start',
                       gap: 8,
-                      marginBottom: 12,
+                      marginBottom: isEditing || isAnswerOpen ? 12 : 8,
                     }}
                   >
                     {isEditing ? (
@@ -374,12 +411,60 @@ export function OneToOneBlock({
                       </Button>
                     </Space>
                   )}
-                  <Input.TextArea
-                    rows={2}
-                    placeholder={t('oneToOne.answerPlaceholder')}
-                    value={question.answer}
-                    onChange={(e) => onChangeAnswer(question.id, e.target.value)}
-                  />
+                  {isAnswerOpen ? (
+                    <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                      <Input.TextArea
+                        rows={2}
+                        placeholder={t('oneToOne.answerPlaceholder')}
+                        value={answerDraft(question)}
+                        onChange={(e) =>
+                          changeAnswerDraft(question.id, e.target.value)
+                        }
+                      />
+                      <Space
+                        direction={isMobile ? 'vertical' : 'horizontal'}
+                        style={{ width: isMobile ? '100%' : undefined }}
+                      >
+                        <Button
+                          type="primary"
+                          icon={<SaveOutlined />}
+                          onClick={() => saveAnswer(question)}
+                          aria-label={t('oneToOne.saveAnswerAria')}
+                          block={isMobile}
+                          size={isMobile ? 'large' : 'middle'}
+                        >
+                          {t('common.save')}
+                        </Button>
+                        {question.answered && (
+                          <Button
+                            onClick={() => closeAnswerEditor(question.id)}
+                            block={isMobile}
+                            size={isMobile ? 'large' : 'middle'}
+                          >
+                            {t('common.cancel')}
+                          </Button>
+                        )}
+                      </Space>
+                    </Space>
+                  ) : (
+                    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                      <Typography.Paragraph
+                        type={question.answer ? undefined : 'secondary'}
+                        style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      >
+                        {question.answer || t('oneToOne.answerEmpty')}
+                      </Typography.Paragraph>
+                      <Button
+                        icon={<EditOutlined />}
+                        onClick={() => openAnswerEditor(question)}
+                        aria-label={t('oneToOne.editAnswerAria')}
+                        block={isMobile}
+                        size={isMobile ? 'large' : 'middle'}
+                      >
+                        {t('common.edit')}
+                      </Button>
+                    </Space>
+                  )}
                 </div>
               );
             })}

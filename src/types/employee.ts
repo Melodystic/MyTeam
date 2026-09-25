@@ -648,6 +648,7 @@ export interface OneToOneQuestion {
   id: string;
   text: string;
   answer: string;
+  answered: boolean;
   createdAt: number;
 }
 
@@ -892,21 +893,33 @@ export function normalizeOneToOneNotes(value: unknown): OneToOneMeetingNote[] {
 export function normalizeOneToOneQuestions(value: unknown): OneToOneQuestion[] {
   if (!Array.isArray(value)) return [];
 
-  return value
-    .filter(
-      (question): question is OneToOneQuestion =>
-        !!question &&
-        typeof question === 'object' &&
-        typeof question.id === 'string' &&
-        typeof question.text === 'string' &&
-        typeof question.createdAt === 'number',
-    )
-    .map((question) => ({
-      id: question.id,
-      text: question.text,
-      answer: typeof question.answer === 'string' ? question.answer : '',
-      createdAt: question.createdAt,
-    }));
+  return value.flatMap((rawQuestion) => {
+    if (!rawQuestion || typeof rawQuestion !== 'object') return [];
+
+    const question = rawQuestion as Record<string, unknown>;
+    if (
+      typeof question.id !== 'string' ||
+      typeof question.text !== 'string' ||
+      typeof question.createdAt !== 'number'
+    ) {
+      return [];
+    }
+
+    const answer = typeof question.answer === 'string' ? question.answer : '';
+
+    return [
+      {
+        id: question.id,
+        text: question.text,
+        answer,
+        answered:
+          typeof question.answered === 'boolean'
+            ? question.answered
+            : answer.trim().length > 0,
+        createdAt: question.createdAt,
+      },
+    ];
+  });
 }
 
 export function normalizeColleagueFeedback(value: unknown): ColleagueFeedback[] {
