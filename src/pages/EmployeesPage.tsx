@@ -34,6 +34,7 @@ import {
 } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { useLocale } from '../context/LocaleContext';
+import { GroupCallNotesBlock } from '../components/GroupCallNotesBlock';
 
 interface EmployeeFormValues {
   firstName: string;
@@ -71,7 +72,14 @@ function ProjectAssignmentsMeta({
 export function EmployeesPage() {
   const { employees, loading, addEmployee, updateEmployeeProfile, removeEmployee } =
     useEmployees();
-  const { workMode, setWorkMode } = useWorkspace();
+  const {
+    workMode,
+    setWorkMode,
+    notes,
+    updateLeadNotesAfter,
+    saveLeadMeeting,
+    updateLeadMeetingNote,
+  } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [form] = Form.useForm<EmployeeFormValues>();
@@ -171,6 +179,20 @@ export function EmployeesPage() {
           { label: t('mode.team'), value: 'team' },
           { label: t('mode.headOfLeads'), value: 'headOfLeads' },
         ]}
+      />
+
+      <GroupCallNotesBlock
+        draft={notes.groupCalls.after}
+        notes={notes.groupCalls.notes}
+        onChangeDraft={(draft) =>
+          updateLeadNotesAfter('groupCalls', draft)
+        }
+        onSave={(meetingDate, draft) =>
+          saveLeadMeeting('groupCalls', meetingDate, '', draft)
+        }
+        onUpdate={(noteId, note) =>
+          updateLeadMeetingNote('groupCalls', noteId, note)
+        }
       />
 
       {isHeadOfLeads && (

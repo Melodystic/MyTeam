@@ -58,6 +58,12 @@ const ru = {
   'mode.team': 'Базовый',
   'mode.headOfLeads': 'Лид лидов',
   'mode.switchAria': 'Режим работы',
+  'groupNotes.title': 'Заметки с групповых созвонов',
+  'groupNotes.subtitle':
+    'Фиксируйте итоги групповых встреч и сохраняйте их с датой',
+  'groupNotes.noteLabel': 'Заметка созвона',
+  'groupNotes.placeholder': 'Итоги, решения и договорённости...',
+  'groupNotes.save': 'Сохранить заметку',
   'leadNotes.cardTitle': 'Заметки',
   'leadNotes.cardSubtitle':
     'Встречи с дирекцией, лидами и one-to-one с руководителем',
@@ -293,6 +299,12 @@ const en: Record<TranslationKey, string> = {
   'mode.team': 'Team',
   'mode.headOfLeads': 'Head of Leads',
   'mode.switchAria': 'Work mode',
+  'groupNotes.title': 'Group call notes',
+  'groupNotes.subtitle':
+    'Record group meeting outcomes and save them with a date',
+  'groupNotes.noteLabel': 'Call note',
+  'groupNotes.placeholder': 'Outcomes, decisions, and agreements...',
+  'groupNotes.save': 'Save note',
   'leadNotes.cardTitle': 'Notes',
   'leadNotes.cardSubtitle':
     'Directorate meetings, notes with leads, and 1:1 with your manager',

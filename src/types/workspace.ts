@@ -2,7 +2,11 @@ import { normalizeOneToOneNotes, type OneToOneMeetingNote } from './employee';
 
 export type WorkMode = 'team' | 'headOfLeads';
 
-export type LeadNoteKind = 'directorate' | 'leads' | 'managerOneToOne';
+export type LeadNoteKind =
+  | 'directorate'
+  | 'leads'
+  | 'managerOneToOne'
+  | 'groupCalls';
 
 export interface LeadNotesSection {
   prep: string;
@@ -14,6 +18,7 @@ export interface WorkspaceNotes {
   directorate: LeadNotesSection;
   leads: LeadNotesSection;
   managerOneToOne: LeadNotesSection;
+  groupCalls: LeadNotesSection;
 }
 
 export function createEmptyLeadNotesSection(): LeadNotesSection {
@@ -29,6 +34,7 @@ export function createEmptyWorkspaceNotes(): WorkspaceNotes {
     directorate: createEmptyLeadNotesSection(),
     leads: createEmptyLeadNotesSection(),
     managerOneToOne: createEmptyLeadNotesSection(),
+    groupCalls: createEmptyLeadNotesSection(),
   };
 }
 
@@ -65,6 +71,7 @@ export function normalizeWorkspaceNotes(value: unknown): WorkspaceNotes {
     directorate: normalizeLeadNotesSection(record.directorate),
     leads: normalizeLeadNotesSection(record.leads),
     managerOneToOne: normalizeLeadNotesSection(record.managerOneToOne),
+    groupCalls: normalizeLeadNotesSection(record.groupCalls),
   };
 }
 

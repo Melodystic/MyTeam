@@ -18,6 +18,9 @@ import { useLocale } from '../context/LocaleContext';
 
 interface OneToOneNotesArchiveProps {
   notes: OneToOneMeetingNote[];
+  showPrep?: boolean;
+  afterLabel?: string;
+  afterPlaceholder?: string;
   onUpdate: (
     noteId: string,
     note: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
@@ -26,6 +29,9 @@ interface OneToOneNotesArchiveProps {
 
 export function OneToOneNotesArchive({
   notes,
+  showPrep = true,
+  afterLabel,
+  afterPlaceholder,
   onUpdate,
 }: OneToOneNotesArchiveProps) {
   const { token } = theme.useToken();
@@ -35,6 +41,9 @@ export function OneToOneNotesArchive({
   const [editingDate, setEditingDate] = useState<Dayjs | null>(null);
   const [editingPrep, setEditingPrep] = useState('');
   const [editingAfter, setEditingAfter] = useState('');
+  const resolvedAfterLabel = afterLabel ?? t('oneToOne.afterTitle');
+  const resolvedAfterPlaceholder =
+    afterPlaceholder ?? t('oneToOne.afterShortPlaceholder');
 
   const sortedNotes = [...notes].sort(
     (a, b) => b.meetingDate - a.meetingDate || b.createdAt - a.createdAt,
@@ -56,7 +65,7 @@ export function OneToOneNotesArchive({
 
   const saveEdit = () => {
     if (!editingId || !editingDate) return;
-    const prep = editingPrep.trim();
+    const prep = showPrep ? editingPrep.trim() : '';
     const after = editingAfter.trim();
     if (!prep && !after) return;
 
@@ -106,27 +115,31 @@ export function OneToOneNotesArchive({
                             allowClear={false}
                             style={{ width: isMobile ? '100%' : 180 }}
                           />
+                          {showPrep && (
+                            <div>
+                              <Typography.Text strong>
+                                {t('oneToOne.prepTitle')}
+                              </Typography.Text>
+                              <Input.TextArea
+                                rows={3}
+                                value={editingPrep}
+                                onChange={(event) =>
+                                  setEditingPrep(event.target.value)
+                                }
+                                placeholder={t('oneToOne.prepPlaceholder')}
+                                style={{ marginTop: 8 }}
+                              />
+                            </div>
+                          )}
                           <div>
                             <Typography.Text strong>
-                              {t('oneToOne.prepTitle')}
-                            </Typography.Text>
-                            <Input.TextArea
-                              rows={3}
-                              value={editingPrep}
-                              onChange={(event) => setEditingPrep(event.target.value)}
-                              placeholder={t('oneToOne.prepPlaceholder')}
-                              style={{ marginTop: 8 }}
-                            />
-                          </div>
-                          <div>
-                            <Typography.Text strong>
-                              {t('oneToOne.afterTitle')}
+                              {resolvedAfterLabel}
                             </Typography.Text>
                             <Input.TextArea
                               rows={3}
                               value={editingAfter}
                               onChange={(event) => setEditingAfter(event.target.value)}
-                              placeholder={t('oneToOne.afterShortPlaceholder')}
+                              placeholder={resolvedAfterPlaceholder}
                               style={{ marginTop: 8 }}
                             />
                           </div>
@@ -140,7 +153,8 @@ export function OneToOneNotesArchive({
                               onClick={saveEdit}
                               disabled={
                                 !editingDate ||
-                                (!editingPrep.trim() && !editingAfter.trim())
+                                (!(showPrep && editingPrep.trim()) &&
+                                  !editingAfter.trim())
                               }
                               block={isMobile}
                             >
@@ -178,7 +192,7 @@ export function OneToOneNotesArchive({
                             </Button>
                           </div>
 
-                          {note.prep && (
+                          {showPrep && note.prep && (
                             <div style={{ marginBottom: note.after ? 12 : 0 }}>
                               <Typography.Text type="secondary">
                                 {t('oneToOne.prepTitle')}
@@ -193,7 +207,7 @@ export function OneToOneNotesArchive({
                           {note.after && (
                             <div>
                               <Typography.Text type="secondary">
-                                {t('oneToOne.afterTitle')}
+                                {resolvedAfterLabel}
                               </Typography.Text>
                               <Typography.Paragraph
                                 style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}
