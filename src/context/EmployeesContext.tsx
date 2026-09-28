@@ -199,7 +199,11 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
         ...employee,
         needs: {
           ...employee.needs,
-          [need]: { ...employee.needs[need], comment },
+          [need]: {
+            ...employee.needs[need],
+            comment,
+            commentSaved: true,
+          },
         },
       }));
     },
@@ -248,7 +252,9 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       updateEmployee(id, (employee) => ({
         ...employee,
         metrics: employee.metrics.map((metric) =>
-          metric.id === metricId ? { ...metric, comment } : metric,
+          metric.id === metricId
+            ? { ...metric, comment, commentSaved: true }
+            : metric,
         ),
       }));
     },

@@ -22,6 +22,7 @@ import {
   type Employee,
   type EmployeeMetric,
 } from '../types/employee';
+import { SavedCommentField } from './SavedCommentField';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { RadarChart } from './RadarChart';
 import { useLocale } from '../context/LocaleContext';
@@ -298,11 +299,14 @@ export function MetricsBlock({
                 </Space>
               </div>
 
-              <Input.TextArea
-                rows={2}
-                placeholder={t('metrics.commentPlaceholder')}
+              <SavedCommentField
                 value={metric.comment}
-                onChange={(e) => onChangeComment(metric.id, e.target.value)}
+                saved={metric.commentSaved}
+                placeholder={t('metrics.commentPlaceholder')}
+                emptyText={t('metrics.commentEmpty')}
+                saveAria={t('metrics.saveCommentAria')}
+                editAria={t('metrics.editCommentAria')}
+                onSave={(comment) => onChangeComment(metric.id, comment)}
               />
             </div>
           );

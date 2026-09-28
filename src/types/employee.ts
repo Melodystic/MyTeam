@@ -539,6 +539,7 @@ export interface NeedState {
   score: number;
   mark: NeedMark;
   comment: string;
+  commentSaved: boolean;
 }
 
 export type NeedsMap = Record<NeedKey, NeedState>;
@@ -624,6 +625,7 @@ export interface EmployeeMetric {
   shortName: string;
   value: number;
   comment: string;
+  commentSaved: boolean;
   /** Ключ пресета, если метрика из базового набора */
   presetKey?: string;
 }
@@ -703,7 +705,7 @@ export interface Employee {
 
 export function createEmptyNeeds(): NeedsMap {
   return NEED_KEYS.reduce((acc, key) => {
-    acc[key] = { score: 0, mark: 'K', comment: '' };
+    acc[key] = { score: 0, mark: 'K', comment: '', commentSaved: false };
     return acc;
   }, {} as NeedsMap);
 }
@@ -945,6 +947,17 @@ export function normalizeColleagueFeedback(value: unknown): ColleagueFeedback[] 
     }));
 }
 
+function normalizeSavedComment(
+  comment: unknown,
+  saved: unknown,
+): { comment: string; commentSaved: boolean } {
+  const text = typeof comment === 'string' ? comment : '';
+  return {
+    comment: text,
+    commentSaved: typeof saved === 'boolean' ? saved : text.trim().length > 0,
+  };
+}
+
 export function normalizeMetrics(value: unknown): EmployeeMetric[] {
   if (!Array.isArray(value)) return [];
 
@@ -965,7 +978,7 @@ export function normalizeMetrics(value: unknown): EmployeeMetric[] {
           ? metric.shortName
           : metric.name,
       value: Math.min(METRIC_MAX, Math.max(0, Math.round(metric.value))),
-      comment: typeof metric.comment === 'string' ? metric.comment : '',
+      ...normalizeSavedComment(metric.comment, metric.commentSaved),
       presetKey: typeof metric.presetKey === 'string' ? metric.presetKey : undefined,
     }));
 }
@@ -977,6 +990,7 @@ export function createMetricFromPreset(preset: MetricPreset): EmployeeMetric {
     shortName: preset.shortName,
     value: 0,
     comment: '',
+    commentSaved: false,
     presetKey: preset.key,
   };
 }
@@ -989,6 +1003,7 @@ export function createCustomMetric(name: string): EmployeeMetric {
     shortName: trimmed.length > 14 ? `${trimmed.slice(0, 13)}…` : trimmed,
     value: 0,
     comment: '',
+    commentSaved: false,
   };
 }
 
@@ -1016,7 +1031,7 @@ export function normalizeNeeds(value: unknown): NeedsMap {
     acc[key] = {
       score: clampNeedScore(rawScore),
       mark: item.mark === 'OT' ? 'OT' : 'K',
-      comment: typeof item.comment === 'string' ? item.comment : '',
+      ...normalizeSavedComment(item.comment, item.commentSaved),
     };
     return acc;
   }, {} as NeedsMap);

@@ -1,4 +1,4 @@
-import { Button, Input, Space, Tooltip, Typography, theme } from 'antd';
+import { Button, Space, Tooltip, Typography, theme } from 'antd';
 import { InfoCircleOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   NEED_KEYS,
@@ -9,6 +9,7 @@ import {
 } from '../types/employee';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { NeedsRadarChart } from './NeedsRadarChart';
+import { SavedCommentField } from './SavedCommentField';
 import { useLocale } from '../context/LocaleContext';
 
 interface NeedsBlockProps {
@@ -161,11 +162,14 @@ export function NeedsBlock({
                 </Space>
               </div>
 
-              <Input.TextArea
-                rows={2}
-                placeholder={t('needs.commentPlaceholder')}
+              <SavedCommentField
                 value={need.comment}
-                onChange={(e) => onChangeComment(key, e.target.value)}
+                saved={need.commentSaved}
+                placeholder={t('needs.commentPlaceholder')}
+                emptyText={t('needs.commentEmpty')}
+                saveAria={t('needs.saveCommentAria')}
+                editAria={t('needs.editCommentAria')}
+                onSave={(comment) => onChangeComment(key, comment)}
               />
             </div>
           );
