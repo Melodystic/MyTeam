@@ -65,6 +65,8 @@ interface EmployeesContextValue {
     noteId: string,
     note: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
   ) => void;
+  addProjectTaskNote: (id: string, text: string) => void;
+  updateProjectTaskNote: (id: string, noteId: string, text: string) => void;
   addDelegationNote: (id: string, text: string) => void;
   updateDelegationNote: (id: string, noteId: string, text: string) => void;
   updateFeedbackType: (id: string, type: FeedbackType) => void;
@@ -426,6 +428,45 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
     [updateEmployee],
   );
 
+  const addProjectTaskNote = useCallback(
+    (id: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      const now = Date.now();
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        projectTaskNotes: [
+          {
+            id: crypto.randomUUID(),
+            text: trimmed,
+            createdAt: now,
+            updatedAt: now,
+          },
+          ...employee.projectTaskNotes,
+        ],
+      }));
+    },
+    [updateEmployee],
+  );
+
+  const updateProjectTaskNote = useCallback(
+    (id: string, noteId: string, text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      updateEmployee(id, (employee) => ({
+        ...employee,
+        projectTaskNotes: employee.projectTaskNotes.map((note) =>
+          note.id === noteId
+            ? { ...note, text: trimmed, updatedAt: Date.now() }
+            : note,
+        ),
+      }));
+    },
+    [updateEmployee],
+  );
+
   const updateDelegationNote = useCallback(
     (id: string, noteId: string, text: string) => {
       updateEmployee(id, (employee) => ({
@@ -615,6 +656,8 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       removeOneToOneQuestion,
       saveOneToOneMeeting,
       updateOneToOneNote,
+      addProjectTaskNote,
+      updateProjectTaskNote,
       addDelegationNote,
       updateDelegationNote,
       updateFeedbackType,
@@ -648,6 +691,8 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
       removeOneToOneQuestion,
       saveOneToOneMeeting,
       updateOneToOneNote,
+      addProjectTaskNote,
+      updateProjectTaskNote,
       addDelegationNote,
       updateDelegationNote,
       updateFeedbackType,

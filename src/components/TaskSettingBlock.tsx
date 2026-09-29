@@ -1,6 +1,13 @@
 import { Collapse, Space, Typography, theme } from 'antd';
-import { useIsMobile } from '../hooks/useBreakpoint';
 import { useLocale } from '../context/LocaleContext';
+import type { SavedNote } from '../types/employee';
+import { SavedNotesBlock } from './SavedNotesBlock';
+
+interface TaskSettingBlockProps {
+  notes: SavedNote[];
+  onAddNote: (text: string) => void;
+  onUpdateNote: (noteId: string, text: string) => void;
+}
 
 function MethodSection({
   title,
@@ -25,62 +32,96 @@ function MethodSection({
   );
 }
 
-export function TaskSettingBlock() {
+export function TaskSettingBlock({
+  notes,
+  onAddNote,
+  onUpdateNote,
+}: TaskSettingBlockProps) {
   const { token } = theme.useToken();
-  const isMobile = useIsMobile();
   const { domain, t } = useLocale();
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
-      <div
-        style={{
-          padding: isMobile ? 12 : 16,
-          borderRadius: token.borderRadiusLG,
-          background: token.colorFillAlter,
-          border: `1px solid ${token.colorBorderSecondary}`,
-        }}
-      >
+      <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>
-          {t('tasks.smartTitle')}
+          {t('tasks.commentsTitle')}
         </Typography.Title>
-        <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          {t('tasks.smartIntro')}
-        </Typography.Paragraph>
-        <Space direction="vertical" size={16} style={{ width: '100%' }}>
-          {domain.SMART_CRITERIA.map((item) => (
-            <div key={item.letter} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 40,
-                  height: 40,
-                  borderRadius: token.borderRadiusLG,
-                  background: token.colorPrimaryBg,
-                  color: token.colorPrimary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: 18,
-                }}
-              >
-                {item.letter}
-              </div>
-              <div>
-                <Typography.Text strong>
-                  {item.letter} — {item.label}
-                </Typography.Text>
-                <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-                  {item.word}
-                </Typography.Text>
-                <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                  {item.description}
-                </Typography.Paragraph>
-              </div>
-            </div>
-          ))}
-        </Space>
+        <SavedNotesBlock
+          notes={notes}
+          placeholder={t('tasks.commentsPlaceholder')}
+          saveLabel={t('tasks.saveComment')}
+          savedTitle={t('tasks.savedComments')}
+          emptyDescription={t('tasks.commentsEmpty')}
+          onAdd={onAddNote}
+          onUpdate={onUpdateNote}
+        />
       </div>
+
+      <Collapse
+        items={[
+          {
+            key: 'smart',
+            label: t('tasks.smartTitle'),
+            children: (
+              <>
+                <Typography.Paragraph
+                  type="secondary"
+                  style={{ marginBottom: 16 }}
+                >
+                  {t('tasks.smartIntro')}
+                </Typography.Paragraph>
+                <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                  {domain.SMART_CRITERIA.map((item) => (
+                    <div
+                      key={item.letter}
+                      style={{
+                        display: 'flex',
+                        gap: 12,
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          width: 40,
+                          height: 40,
+                          borderRadius: token.borderRadiusLG,
+                          background: token.colorPrimaryBg,
+                          color: token.colorPrimary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: 18,
+                        }}
+                      >
+                        {item.letter}
+                      </div>
+                      <div>
+                        <Typography.Text strong>
+                          {item.letter} — {item.label}
+                        </Typography.Text>
+                        <Typography.Text
+                          type="secondary"
+                          style={{ display: 'block', marginBottom: 4 }}
+                        >
+                          {item.word}
+                        </Typography.Text>
+                        <Typography.Paragraph
+                          type="secondary"
+                          style={{ marginBottom: 0 }}
+                        >
+                          {item.description}
+                        </Typography.Paragraph>
+                      </div>
+                    </div>
+                  ))}
+                </Space>
+              </>
+            ),
+          },
+        ]}
+      />
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>

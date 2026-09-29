@@ -34,6 +34,8 @@ export function EmployeeDetailPage() {
     removeOneToOneQuestion,
     saveOneToOneMeeting,
     updateOneToOneNote,
+    addProjectTaskNote,
+    updateProjectTaskNote,
     addDelegationNote,
     updateDelegationNote,
     updateFeedbackType,
@@ -181,7 +183,17 @@ export function EmployeeDetailPage() {
             {
               key: 'tasks',
               label: isMobile ? t('tabs.tasksMobile') : t('tabs.tasks'),
-              children: <TaskSettingBlock />,
+              children: (
+                <TaskSettingBlock
+                  notes={employee.projectTaskNotes}
+                  onAddNote={(text) =>
+                    addProjectTaskNote(employee.id, text)
+                  }
+                  onUpdateNote={(noteId, text) =>
+                    updateProjectTaskNote(employee.id, noteId, text)
+                  }
+                />
+              ),
             },
             {
               key: 'notes',

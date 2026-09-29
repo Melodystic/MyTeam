@@ -8,6 +8,9 @@ import { useLocale } from '../context/LocaleContext';
 interface SavedNotesBlockProps {
   notes: SavedNote[];
   placeholder?: string;
+  saveLabel?: string;
+  savedTitle?: string;
+  emptyDescription?: string;
   hideComposer?: boolean;
   onAdd: (text: string) => void;
   onUpdate: (noteId: string, text: string) => void;
@@ -16,6 +19,9 @@ interface SavedNotesBlockProps {
 export function SavedNotesBlock({
   notes,
   placeholder,
+  saveLabel,
+  savedTitle,
+  emptyDescription,
   hideComposer = false,
   onAdd,
   onUpdate,
@@ -74,20 +80,20 @@ export function SavedNotesBlock({
             size={isMobile ? 'large' : 'middle'}
             style={{ marginTop: 12 }}
           >
-            {t('notes.save')}
+            {saveLabel ?? t('notes.save')}
           </Button>
         </div>
       )}
 
       <div>
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>
-          {t('notes.savedTitle')}
+          {savedTitle ?? t('notes.savedTitle')}
         </Typography.Title>
 
         {sortedNotes.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t('notes.empty')}
+            description={emptyDescription ?? t('notes.empty')}
           />
         ) : (
           <List

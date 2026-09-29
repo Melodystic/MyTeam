@@ -694,6 +694,7 @@ export interface Employee {
   oneToOneAfter: string;
   oneToOneQuestions: OneToOneQuestion[];
   oneToOneNotes: OneToOneMeetingNote[];
+  projectTaskNotes: SavedNote[];
   delegationNotes: SavedNote[];
   feedbackType: FeedbackType;
   feedbackNotes: string;
@@ -767,6 +768,7 @@ export function createEmployee(profile: EmployeeProfileInput): Employee {
     oneToOneAfter: '',
     oneToOneQuestions: [],
     oneToOneNotes: [],
+    projectTaskNotes: [],
     delegationNotes: [],
     feedbackType: null,
     feedbackNotes: '',
@@ -1058,6 +1060,7 @@ export function normalizeEmployee(employee: Employee): Employee {
       typeof employee.oneToOneAfter === 'string' ? employee.oneToOneAfter : '',
     oneToOneQuestions: normalizeOneToOneQuestions(employee.oneToOneQuestions),
     oneToOneNotes: normalizeOneToOneNotes(employee.oneToOneNotes),
+    projectTaskNotes: normalizeSavedNotes(employee.projectTaskNotes),
     delegationNotes: normalizeSavedNotes(employee.delegationNotes),
     feedbackType: employee.feedbackType ?? null,
     feedbackNotes: employee.feedbackNotes ?? '',
