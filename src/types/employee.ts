@@ -633,6 +633,7 @@ export interface EmployeeMetric {
 export interface SavedNote {
   id: string;
   text: string;
+  project?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -823,6 +824,7 @@ export function normalizeSavedNotes(value: unknown): SavedNote[] {
       )
       .map((note) => ({
         ...note,
+        project: typeof note.project === 'string' ? note.project : undefined,
         updatedAt: typeof note.updatedAt === 'number' ? note.updatedAt : note.createdAt,
       }));
   }

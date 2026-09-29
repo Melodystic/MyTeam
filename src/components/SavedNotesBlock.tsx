@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button, Empty, Input, List, Space, Typography, theme } from 'antd';
 import { EditOutlined, SaveOutlined } from '@ant-design/icons';
 import type { SavedNote } from '../types/employee';
@@ -11,8 +11,9 @@ interface SavedNotesBlockProps {
   saveLabel?: string;
   savedTitle?: string;
   emptyDescription?: string;
+  renderNoteMeta?: (note: SavedNote) => ReactNode;
   hideComposer?: boolean;
-  onAdd: (text: string) => void;
+  onAdd?: (text: string) => void;
   onUpdate: (noteId: string, text: string) => void;
 }
 
@@ -22,6 +23,7 @@ export function SavedNotesBlock({
   saveLabel,
   savedTitle,
   emptyDescription,
+  renderNoteMeta,
   hideComposer = false,
   onAdd,
   onUpdate,
@@ -37,7 +39,7 @@ export function SavedNotesBlock({
 
   const handleSave = () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || !onAdd) return;
     onAdd(text);
     setDraft('');
   };
@@ -122,13 +124,23 @@ export function SavedNotesBlock({
                       flexDirection: isMobile ? 'column' : 'row',
                     }}
                   >
-                    <Typography.Text type="secondary" style={{ fontSize: isMobile ? 12 : undefined }}>
-                      {formatDate(note.createdAt, true)}
-                      {note.updatedAt !== note.createdAt &&
-                        t('notes.updated', {
-                          date: formatDate(note.updatedAt, true),
-                        })}
-                    </Typography.Text>
+                    <div>
+                      <Typography.Text
+                        type="secondary"
+                        style={{ fontSize: isMobile ? 12 : undefined }}
+                      >
+                        {formatDate(note.createdAt, true)}
+                        {note.updatedAt !== note.createdAt &&
+                          t('notes.updated', {
+                            date: formatDate(note.updatedAt, true),
+                          })}
+                      </Typography.Text>
+                      {renderNoteMeta && (
+                        <div style={{ marginTop: 2 }}>
+                          {renderNoteMeta(note)}
+                        </div>
+                      )}
+                    </div>
                     {!isEditing && (
                       <Button
                         type="text"

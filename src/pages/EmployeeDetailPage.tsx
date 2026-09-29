@@ -186,8 +186,11 @@ export function EmployeeDetailPage() {
               children: (
                 <TaskSettingBlock
                   notes={employee.projectTaskNotes}
-                  onAddNote={(text) =>
-                    addProjectTaskNote(employee.id, text)
+                  projects={employee.projectAssignments.map(
+                    (assignment) => assignment.project,
+                  )}
+                  onAddNote={(text, project) =>
+                    addProjectTaskNote(employee.id, text, project)
                   }
                   onUpdateNote={(noteId, text) =>
                     updateProjectTaskNote(employee.id, noteId, text)

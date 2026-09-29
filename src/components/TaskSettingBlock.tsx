@@ -1,11 +1,23 @@
-import { Collapse, Space, Typography, theme } from 'antd';
+import { useState } from 'react';
+import {
+  Button,
+  Collapse,
+  Input,
+  Select,
+  Space,
+  Typography,
+  theme,
+} from 'antd';
+import { SaveOutlined } from '@ant-design/icons';
 import { useLocale } from '../context/LocaleContext';
 import type { SavedNote } from '../types/employee';
 import { SavedNotesBlock } from './SavedNotesBlock';
+import { useIsMobile } from '../hooks/useBreakpoint';
 
 interface TaskSettingBlockProps {
   notes: SavedNote[];
-  onAddNote: (text: string) => void;
+  projects: string[];
+  onAddNote: (text: string, project: string) => void;
   onUpdateNote: (noteId: string, text: string) => void;
 }
 
@@ -34,11 +46,36 @@ function MethodSection({
 
 export function TaskSettingBlock({
   notes,
+  projects,
   onAddNote,
   onUpdateNote,
 }: TaskSettingBlockProps) {
   const { token } = theme.useToken();
+  const isMobile = useIsMobile();
   const { domain, t } = useLocale();
+  const [draft, setDraft] = useState('');
+  const [selectedProject, setSelectedProject] = useState('');
+
+  const uniqueProjects = Array.from(
+    new Set(projects.map((project) => project.trim()).filter(Boolean)),
+  );
+  const hasMultipleProjects = uniqueProjects.length > 1;
+  const projectIsSelected = uniqueProjects.includes(selectedProject);
+
+  const saveComment = () => {
+    const text = draft.trim();
+    const project =
+      uniqueProjects.length === 1
+        ? uniqueProjects[0]
+        : projectIsSelected
+          ? selectedProject
+          : '';
+
+    if (!text || (hasMultipleProjects && !project)) return;
+    onAddNote(text, project);
+    setDraft('');
+    setSelectedProject('');
+  };
 
   return (
     <Space direction="vertical" size={20} style={{ width: '100%' }}>
@@ -46,15 +83,60 @@ export function TaskSettingBlock({
         <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>
           {t('tasks.commentsTitle')}
         </Typography.Title>
-        <SavedNotesBlock
-          notes={notes}
+        {hasMultipleProjects && (
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text
+              type="secondary"
+              style={{ display: 'block', marginBottom: 6 }}
+            >
+              {t('tasks.projectSelectLabel')}
+            </Typography.Text>
+            <Select
+              value={projectIsSelected ? selectedProject : undefined}
+              onChange={setSelectedProject}
+              placeholder={t('tasks.projectSelectPlaceholder')}
+              options={uniqueProjects.map((project) => ({
+                value: project,
+                label: project,
+              }))}
+              style={{ width: '100%', maxWidth: 420 }}
+              size={isMobile ? 'large' : 'middle'}
+            />
+          </div>
+        )}
+        <Input.TextArea
+          rows={isMobile ? 4 : 5}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
           placeholder={t('tasks.commentsPlaceholder')}
-          saveLabel={t('tasks.saveComment')}
-          savedTitle={t('tasks.savedComments')}
-          emptyDescription={t('tasks.commentsEmpty')}
-          onAdd={onAddNote}
-          onUpdate={onUpdateNote}
         />
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          onClick={saveComment}
+          disabled={!draft.trim() || (hasMultipleProjects && !projectIsSelected)}
+          block={isMobile}
+          size={isMobile ? 'large' : 'middle'}
+          style={{ marginTop: 12 }}
+        >
+          {t('tasks.saveComment')}
+        </Button>
+        <div style={{ marginTop: 20 }}>
+          <SavedNotesBlock
+            notes={notes}
+            savedTitle={t('tasks.savedComments')}
+            emptyDescription={t('tasks.commentsEmpty')}
+            renderNoteMeta={(note) =>
+              note.project ? (
+                <Typography.Text strong>
+                  {t('tasks.projectMeta', { project: note.project })}
+                </Typography.Text>
+              ) : null
+            }
+            hideComposer
+            onUpdate={onUpdateNote}
+          />
+        </div>
       </div>
 
       <Collapse

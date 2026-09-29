@@ -65,7 +65,7 @@ interface EmployeesContextValue {
     noteId: string,
     note: Pick<OneToOneMeetingNote, 'meetingDate' | 'prep' | 'after'>,
   ) => void;
-  addProjectTaskNote: (id: string, text: string) => void;
+  addProjectTaskNote: (id: string, text: string, project: string) => void;
   updateProjectTaskNote: (id: string, noteId: string, text: string) => void;
   addDelegationNote: (id: string, text: string) => void;
   updateDelegationNote: (id: string, noteId: string, text: string) => void;
@@ -429,7 +429,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
   );
 
   const addProjectTaskNote = useCallback(
-    (id: string, text: string) => {
+    (id: string, text: string, project: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
 
@@ -440,6 +440,7 @@ export function EmployeesProvider({ children }: { children: ReactNode }) {
           {
             id: crypto.randomUUID(),
             text: trimmed,
+            project: project.trim(),
             createdAt: now,
             updatedAt: now,
           },
